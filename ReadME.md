@@ -1,3 +1,6 @@
-# Gu_Gu_Gu Team
+###  MiniSQL
 
-MiniSQL for Database System
+MiniSQL Project
+
+Team Gu_Gu_Gu
+
