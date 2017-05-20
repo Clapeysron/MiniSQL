@@ -1,6 +1,6 @@
 # Buffer Manager
 
-@Author Melody
+@Melody
 
 # 主要功能
 
