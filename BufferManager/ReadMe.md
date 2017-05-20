@@ -14,5 +14,25 @@ Author：@Melody
 
 5. 因为无法做到全面的考虑 Index 的情况，暂时不考虑 Index 文件的读取方法。希望这部分由写 Index 的同学完成。
 
+# 主要架构
 
+主模块 BufferManager 管理多个 BufferUnit ，BufferUnitManager 管理多个 Block。每个文件都有一个 BufferUnit，这样可以加快多个表读写时的效率。
+
+
+# BufferManager
+
+对外接口如下。
+
+
+```
+	bool createFile(string filename); // Create a file.
+    
+	bool deleteFile(string filename); // Delete a file.
+    
+	bool readDataFromFile(string filename, int blockIndex, char *readBuffer); // Read the specific blockIndex data in the file to the memory.
+    
+	bool writeDataToFile(string filename, int blockIndex, char *writeBuffer); // Write the data to the specific blockIndex to the file from the memory.
+    
+	bool lockBlock(string filename, int blockIndex); // Lock or Unlock the Block in the specific file.
+```
 
