@@ -4,12 +4,6 @@
 
 #include "BufferManager.h"
 
-//
-// Created by Melody on 2017/5/23 0023.
-//
-
-#include "BufferManager.h"
-
 int BufferManager::getIndexByFileName(string filename){
     for(int i = 0; i < files.size(); ++i){
         if(filename == files[i]){
