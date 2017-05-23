@@ -2,40 +2,36 @@
 // Created by Melody on 2017/5/23 0023.
 //
 
-#ifndef SQL_BUFFERUNIT_H
-#define SQL_BUFFERUNIT_H
-#include <fstream>
-#include <string>
+#ifndef _BUFFERMANAGER_H_
+#define _BUFFERMANAGER_H_
+
 #include <vector>
-#include "BufferDataBlock.h"
+#include <string>
+#include <cstdio>
+#include "BufferUnit.h"
+
 using namespace std;
 
-class BufferUnit {
+class BufferManager{
 private:
-    int bufferSize = 256;
-    int blockSize = 4096;
+    vector<BufferUnit> buffers;
+    vector<string> files;
+    int BufferSize;
+    int BlockSize;
 
-    string filename;
-    int filesize;
-    vector<int> blockIndexInBuffer;
-    vector<BufferDataBlock> blocks;
-
-    int clockIndex = 0;
-    int success = 0;
-
-    bool swapBlock(int fileindex, int blockindex);
-    int getValidBlock();
-    int upFloor(double size);
+    int getIndexByFileName(string filename); // Get the index of buffer in the buffers vector by filename.
+    ifstream::pos_type getFileSize(string filename); // Get the size of one file.
+    bool buildBuffer(string filename); // Build a buffer on a file.
+    bool destroyBuffer(string filename); // Destroy the specific file's buffer.
 
 public:
-    bool readBlock(int index, char *readBuffer);
-    bool writeBlock(int index, char*writeBuffer);
-    bool lockBlock(int index, int status);
-
-    BufferUnit(string filename, int blockSize, int bufferSize);
-    ~BufferUnit();
-
+    bool createFile(string filename); // Create a file.
+    bool deleteFile(string filename); // Delete a file.
+    bool readDataFromFile(string filename, int blockIndex, char *readBuffer); // Read the specific blockIndex data in the file to the memory.
+    bool writeDataToFile(string filename, int blockIndex, char *writeBuffer); // Write the data to the specific blockIndex to the file from the memory.
+    bool lockBlock(string filename, int blockIndex); // lockBlockck or Unlock the Block in the specific file.
+    BufferManager(int blockSize, int bufferSize); // Constructor
+    ~BufferManager(); // Destructor
 };
 
-
-#endif //SQL_BUFFERUNIT_H
+#endif
