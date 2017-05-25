@@ -31,6 +31,7 @@ public:
     bool readBlock(int index, char *readBuffer);
     bool writeBlock(int index, char*writeBuffer);
     bool lockBlock(int index, int status);
+    bool deleteLastBlock();
 
     BufferUnit(string filename, int blockSize, int bufferSize);
     ~BufferUnit();
