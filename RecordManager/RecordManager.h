@@ -28,14 +28,14 @@ public:
     bool dropTable(string tableName);
     int insertIntoTable(TableStruct &ts, char* data);
     int deleteRecord(TableStruct &ts, vector<int> &scope, vector<int> &moved);
-    int selectRecord(TableStruct &ts, vector<int> &scope, vector<char *> &result);
-    int selectAttribute(TableStruct &ts, string col, vector<char *> &values);
+    bool selectRecord(TableStruct &ts, vector<int> &scope, vector<char *> &result);
+    bool selectAttribute(TableStruct &ts, string col, vector<char *> &values);
 
     RecordManager(BufferManager &bm, int blockSize):bm(bm), blockSize(blockSize){
 
     };
     ~RecordManager(){
-
+        blockSize = 4096;
     };
 };
 
