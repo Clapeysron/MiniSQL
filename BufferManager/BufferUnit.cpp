@@ -114,6 +114,36 @@ int BufferUnit::upFloor(double size){
     return (int)size + 1;
 }
 
+bool BufferUnit::deleteLastBlock(){
+    if(filesize < 0){
+        return false;
+    }
+
+    filesize -= blockSize;
+    int index = blockIndexInBuffer.back();
+
+    blockIndexInBuffer.erase(blockIndexInBuffer.end() - 1);
+
+    char *buf = new char[filesize];
+    ifstream fp(filename, ios::binary);
+    fp.read(buf, filesize);
+    fp.close();
+
+    ofstream op(filename, ios::binary);
+    op.write(buf, filesize);
+    op.close();
+    delete[] buf;
+
+    // the block is in the buffer, kick it out
+    if (index != -1) {
+        blocks[index].edited = false;
+        blocks[index].index = -1;
+        blocks[index].lock = false;
+        blocks[index].flag = false;
+        blocks[index].valid = false;
+    }
+}
+
 BufferUnit::BufferUnit(string filename, int blockSize, int bufferSize){
     this->filename = filename;
     this->blockSize = blockSize;
