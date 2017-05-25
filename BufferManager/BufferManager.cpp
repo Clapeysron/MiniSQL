@@ -74,7 +74,7 @@ bool BufferManager::readDataFromFile(string filename, int blockIndex, char *read
     int bufferIndex = getIndexByFileName(filename);
     if(bufferIndex == -1){
         buildBuffer(filename);
-        bufferIndex = buffers.size() - 1;
+        bufferIndex = (int)buffers.size() - 1;
     }
     return buffers[bufferIndex].readBlock(blockIndex, readBuffer);
 }
@@ -83,16 +83,26 @@ bool BufferManager::writeDataToFile(string filename, int blockIndex, char *write
     int bufferIndex = getIndexByFileName(filename);
     if(bufferIndex == -1){
         buildBuffer(filename);
-        bufferIndex = buffers.size() - 1;
+        bufferIndex = (int)buffers.size() - 1;
     }
     return buffers[bufferIndex].writeBlock(blockIndex, writeBuffer);
+}
+
+bool BufferManager::deleteLastBlockOfFile(string filename){
+    int bufferIndex = getIndexByFileName(filename);
+    if(bufferIndex == -1){
+        buildBuffer(filename);
+        bufferIndex = (int)buffers.size() - 1;
+    }
+    buffers[bufferIndex].deleteLastBlock();
+    return true;
 }
 
 bool BufferManager::lockBlock(string filename, int blockIndex, int lock){
     int bufferIndex = getIndexByFileName(filename);
     if(bufferIndex == -1){
         buildBuffer(filename);
-        bufferIndex = buffers.size() - 1;
+        bufferIndex = (int)buffers.size() - 1;
     }
     return buffers[bufferIndex].lockBlock(blockIndex, lock);
 }
