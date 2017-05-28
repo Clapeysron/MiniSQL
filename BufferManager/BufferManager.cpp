@@ -8,10 +8,9 @@ int BufferManager::getIndexByFileName(string filename){
     for(int i = 0; i < files.size(); ++i){
         if(filename == files[i]){
             return i;
-        }else{
-            return -1;
         }
     }
+    return -1;
 }
 
 ifstream::pos_type BufferManager::getFileSize(string filename){
@@ -49,7 +48,8 @@ bool BufferManager::destroyBuffer(string filename){
 }
 
 bool BufferManager::createFile(string filename){
-    if(getIndexByFileName(filename) != -1 || (int)getFileSize(filename) != -1){
+    destroyBuffer(filename);
+    if((int)getFileSize(filename) != -1){
         cout << "Fatal error, the table you want to create has already exist." << endl;
         return false;
     }
@@ -65,7 +65,7 @@ bool BufferManager::deleteFile(string filename){
         cout << "Fatal error, the table you want to delete doesn't exist." << endl;
         return false;
     }else{
-        remove(filename);
+        remove(filename.c_str());
         return true;
     }
 }
