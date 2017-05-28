@@ -28,6 +28,8 @@ bool RecordManager::isDup(TableStruct &ts, char *record){
             uniqueList.push_back(pos);
             uniqueList.push_back(pos + attrs[i].length);
         }
+
+        pos = pos + attrs[i].length;
     }
 
     char *block = new char[blockSize];
@@ -70,6 +72,7 @@ bool RecordManager::dropTable(string tableName){
 
 int RecordManager::insertIntoTable(TableStruct &ts, char *data){
     if(isDup(ts, data)){
+        cout << "Dup" << endl;
         return -1;
     }
 
@@ -130,6 +133,7 @@ int RecordManager::deleteRecord(TableStruct &ts, vector<int> &scope, vector<int>
         int index = (currentAmount - 1) % recordAmountInOneBlock;
 
         memcpy(block + j * recordLen, buf + index * recordLen, (size_t)recordLen);
+
 
         currentAmount--;
         if(currentAmount % recordAmountInOneBlock == 0){
@@ -198,6 +202,7 @@ bool RecordManager::selectAttribute(TableStruct &ts, string col, vector<char *> 
         if(attrs[i].name == col){
             start = pointer;
             length = attrs[i].length;
+            break;
         }
         pointer += attrs[i].length;
     }
