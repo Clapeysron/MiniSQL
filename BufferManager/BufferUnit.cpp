@@ -68,7 +68,7 @@ bool BufferUnit::readBlock(int index, char *readBuffer){
 }
 
 bool BufferUnit::writeBlock(int index, char *writeBuffer){
-    if(index < 0 || index >= blockIndexInBuffer.size()){
+    if(index < 0 || index > blockIndexInBuffer.size()){
         return false;
     }else{
         if(index == blockIndexInBuffer.size()){  // write a block at the end of file.
@@ -93,6 +93,8 @@ bool BufferUnit::writeBlock(int index, char *writeBuffer){
                     blockIndexInBuffer[blocks[newIndex].index] = -1;
                 }
                 memcpy(blocks[newIndex].data, writeBuffer, blockSize);
+                blocks[newIndex].edited = 1;
+                blocks[newIndex].flag = 1;
             }
         }
 
