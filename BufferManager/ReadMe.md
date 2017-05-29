@@ -46,6 +46,16 @@ blockIndex 是需要读取的第几个 block 的意思。
 
 readBuffer 由上层使用该接口的提供，读取进来的数据会被放在 readBuffer 之中。
 
+## readDatas
+
+将一个文件中所有的 block 均读进来。
+
+```
+    bool readDatas(string filename, vector<char *> results);
+```
+
+
+
 ## writeDataToFile
 
 顾名思义，向指定 blockIndex 处写入指定数据。大小就是 blockSize
