@@ -1,9 +1,13 @@
 #pragma once
-#include "TypeInfo.h"
+
 #include <string>
 #include <vector>
 #include <string>
-#include "IndexManager.h"
+#include <map>
+#include "..\IndexManager\IndexManager.h"
+#include "..\IndexManager\TypeInfo.h"
+#include "..\BufferManager\BufferManager.h"
+
 
 //typedef int Record;
 
@@ -15,36 +19,40 @@ public:
 
 private:
 	TypeInfo _type;
-	bool is_unique;
+	bool _is_unique;
 	std::string _name;
 };
 
 class TableInfo {
 public:
-	TableInfo(std::vector<FieldInfo> fields, std::vector<Index> _indexes, std::string name, FieldInfo primary, RecordPtr position);
+	TableInfo(std::vector<FieldInfo> fields, size_t index_pos, std::string name, size_t primary, size_t block_num);
 	~TableInfo() = default;
 
 private:
 	std::vector<FieldInfo> _fields;
 	size_t _index_pos;
 	std::string _name;
-	FieldInfo _primary;
-	RecordPtr _position;
+	size_t _primary;
+	
+	size_t _block_num; // how many block the tableinfo uses.
+
 
 };
 
 class CatalogManager {
 public:
-	CatalogManager();
+	CatalogManager(std::string fileName, BufferManager& bufferManager);
 	~CatalogManager() = default;
 	void add_table(TableInfo& table);
 	void remove_table(std::string& table);
 	TableInfo& find_table(std::string& table);
-
+	void writeBack();
 
 
 private:
-	std::vector<TableInfo> _tables;
+	std::map<std::string, TableInfo> _tables;
+	std::string _fileName;
+	BufferManager catalogBufferManager;
 	
 };
 

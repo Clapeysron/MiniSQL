@@ -6,7 +6,7 @@ Author：@Melody
 
 1. 按照上层提供的 index 访问指定 block ，并把多余内容处理掉直接返回。
 
-2. 一个文件一个 BufferManager， 不同文件设置不同的 lock 标志位，当 lock flag 为 1 的时候直接返回读取失败
+2. 一个文件一个 BufferManager， 每一个block有其对应的一个lock标志位，当 lock flag 为 1 的时候直接返回读取失败
 
 3. 将读取到的内容按照 LRU 算法缓存，提高命中率、加快访问速度。
 
