@@ -79,6 +79,19 @@ bool BufferManager::readDataFromFile(string filename, int blockIndex, char *read
     return buffers[bufferIndex].readBlock(blockIndex, readBuffer);
 }
 
+bool BufferManager::readDatas(string filename, vector<char *> results){
+    int bufferIndex = getIndexByFileName(filename);
+    if(bufferIndex == -1){
+        buildBuffer(filename);
+        bufferIndex = (int)buffers.size() - 1;
+    }
+    for(int i = 0; i < (int)(getFileSize(filename) * 1.0 / blockSize + 0.5); ++i){
+        char *block = new char[blockSize];
+        buffers[bufferIndex].readBlock(i, block);
+        results.push_back(block);
+    }
+}
+
 bool BufferManager::writeDataToFile(string filename, int blockIndex, char *writeBuffer){
     int bufferIndex = getIndexByFileName(filename);
     if(bufferIndex == -1){
