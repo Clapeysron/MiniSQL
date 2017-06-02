@@ -13,8 +13,8 @@ public:
     template<typename T>
     CharInStream& operator>>(T& target){
         assert(this->in_avail()>=sizeof(T));
-        this->sgetn(reinterpret_cast<char*>(&target), sizeof(target));
-        // memcpy(reinterpret_cast<char*>(&target),this->gptr(),sizeof(T));
+		memcpy(reinterpret_cast<char*>(&target), this->gptr(), sizeof(T));
+		this->gbump(sizeof(T));
 
         return *this;
     }
@@ -34,6 +34,11 @@ public:
         return this->eback();
     }
 
+	void resize(size_t num) {
+		assert(num >= this->gptr() - this->eback());
+		this->setg(this->eback(), this->gptr(), this->eback() + num);
+	}
+
 };
 
 class CharOutStream:std::streambuf
@@ -41,15 +46,11 @@ class CharOutStream:std::streambuf
 public:
     CharOutStream(char* begin, size_t num)
     {
-        
-        this->setp(begin, begin+num);
-        
+        this->setp(begin, begin+num); 
     }
 
     template<typename T>
     CharOutStream& operator<<(T& target){
-        // std::cout << this->remain() << std::endl;
-        // std::cout << sizeof(T) << std::endl;
         assert(this->remain()>=sizeof(target));
         this->sputn(reinterpret_cast<const char*>(&target), sizeof(T));
         return *this;
