@@ -34,6 +34,14 @@ public:
     bool deleteLastBlockOfFile(string filename);
     BufferManager(int blockSize, int bufferSize); // Constructor
     ~BufferManager(); // Destructor
+
+	//some api wanted by dfz
+	int getBlockSize() {
+		return blockSize;
+	}
+
+	bool writeDataToMultiBlock(string filename, int blockIndexBegin, int blockIndexEnd, char *writeBuffer);
+	
 };
 
 #endif

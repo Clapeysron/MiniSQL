@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 #include <map>
-//#include "..\IndexManager\IndexManager.h"
 #include "..\IndexManager\TypeInfo.h"
 #include "..\BufferManager\BufferManager.h"
 

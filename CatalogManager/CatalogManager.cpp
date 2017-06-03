@@ -19,7 +19,7 @@ FieldInfo FieldInfo::deserialize(CharInStream& cis) {
 void FieldInfo::serialize(CharOutStream & couts) const {
 	couts << _is_unique;
 	couts << _name;
-	TypeInfo::deserialize(couts);
+	_type.serialize(couts);
 
 }
 
@@ -60,7 +60,7 @@ void TableInfo::serialize(CharOutStream& couts)const {
 CatalogManager::CatalogManager(std::string fileName, BufferManager& bufferManger) {
 	std::vector<char*> allBlocks;
 	bufferManger.readDatas(fileName, allBlocks);
-	for (size_t i = 0; i < allBlocks.size(); ) {
+	for (size_t i = 0; i < allBlocks.size(); i++) {
 		CharInStream cis(allBlocks[i], bufferManger.getBlockSize());
 		// TODO : want a getBlockSize()
 		std::string table_name;
@@ -91,6 +91,7 @@ void CatalogManager::writeBack(BufferManager& bufferManager) {
 		i->second.serialize(couts);
 		bufferManager.writeDataToFile(_fileName, block_index, buff);
 		delete[] buff;
+		block_index++;
 	}
 }
 
@@ -102,7 +103,7 @@ void CatalogManager::add_table(TableInfo& table) {
 }
 
 void CatalogManager::remove_table(std::string& tableName) {
-	if (0 == _tables.erase(tableName) {
+	if (0 == _tables.erase(tableName)){
 		throw SomeError("Error: no such table '" + tableName + "'");
 	}
 }

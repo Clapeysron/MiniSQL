@@ -21,7 +21,7 @@ public:
 		return TypeInfo(type, size);
 	}
 
-	void serialize(CharOutStream& couts) {
+	void serialize(CharOutStream& couts)const {
 		couts << _type;
 		couts << _size;
 	}

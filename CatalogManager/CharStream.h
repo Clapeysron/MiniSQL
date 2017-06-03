@@ -39,6 +39,10 @@ public:
 		this->setg(this->eback(), this->gptr(), this->eback() + num);
 	}
 
+	void reset() {
+		this->setg(this->eback(), this->eback(), this->egptr());
+	}
+
 };
 
 class CharOutStream:std::streambuf

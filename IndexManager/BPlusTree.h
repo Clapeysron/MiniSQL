@@ -1,15 +1,6 @@
 #pragma once
 
-class BPlusTreeBase {
-public:
-	BPlusTreeBase() {
-	}
 
-	virtual ~BPlusTreeBase() {}
-
-private:
-
-};
 
 template<T>
 class BPlusTree : public BPlusTreeBase {
