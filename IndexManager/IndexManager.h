@@ -14,7 +14,7 @@ template <typename T>
 class Index {
 public:
 	
-	Index(std::string indexName, std::string fieldName, std::string tableName, BPlusTree* treePtr) :
+	Index(std::string indexName, std::string fieldName, std::string tableName, BPlusTree<T>* treePtr) :
 		_indexName(indexName),
 		_fieldName(fieldName),
 		_tableName(tableName),
@@ -22,11 +22,7 @@ public:
 	{
 	}
 
-	~Index() {
-	}
-
-	
-
+	~Index() = default;
 	static Index deserialize(CharInStream& cis) {
 		std::string indexName;
 		std::string tableName;
@@ -35,7 +31,7 @@ public:
 		size_t blockNum;
 		//size_t blockNum;
 		cis >> blockNum >> type>> indexName >> tableName >> fieldName;
-		return Index(indexName, fieldName, tableName, BPlusTree<T>::recoverTree(cis, size););
+		return Index(indexName, fieldName, tableName, BPlusTree<T>::deserialize(cis););
 	}
 
 	void serialize(CharOutStream& couts) const {
@@ -43,7 +39,7 @@ public:
 		//blockNum = (sizeof(Type) + _indexName.size() + _tableName.size() + _fieldName.size() + _treePtr->size())/blockSize+1;
 		blockNum = getblockNum();
 		couts << size << _type << _indexName <<  _tableName << _fieldName;
-		BPlusTree<T>::serialize(couts);
+		_treePtr->serialize(couts);
 	}
 
 	std::string getName() const {
