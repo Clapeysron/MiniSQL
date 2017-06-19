@@ -420,16 +420,149 @@ string API::select(string table_name, vector<string> col_list, vector<int> index
 
 vector<int> API::search_between(string table_name, int type_1, string comp, int type_2, string between_1, int type_3, string between_2)
 {
-    // TODO: API search_between
+ //   // TODO: API search_between
     vector<int> ret_indexs;
+	//if (!CM.have_table(table_name)) {
+	//	std::cerr << "no such table" << std::endl;
+	//	ret_indexs.push_back(-1); // -1 for no ret_indexs
+	//	return ret_indexs;
+	//} else {
+	//	TableInfo& temp_table = CM.find_table(table_name);
+	//	if (type_1 == 81) {
+	//		if (!temp_table.have_field(comp)) {
+	//			std::cerr << "no such column" << std::endl;
+	//			ret_indexs.push_back(-1); // -1 for no ret_indexs
+	//			return ret_indexs;
+	//		} else {
+	//			FieldInfo temp_field = IM.find_field(comp);
+	//			std::stringstream ss;
+	//			ss << between_1 << between_2;
+
+	//			std::string temp_index = temp_table.find_index(comp);
+	//			if (type_2 == temp_field.get_type() && type_3 == temp_field.get_type()) {
+	//				if (temp_table.have_index(comp)) {
+	//					std::string temp_index = temp_table.find_index(comp);
+	//					switch (type_2) {
+	//					case 82: {
+	//						std::string real_between_1;
+	//						std::string real_between_2;
+	//						ss >> real_between_1 >> real_between_2;
+	//						ret_indexs = IM.search_range(temp_index, &real_between_1, &real_between_2);
+	//						break;
+	//					}
+
+	//					case 83: {
+	//						int real_between_1;
+	//						int real_between_2;
+	//						ss >> real_between_1 >> real_between_2;
+	//						ret_indexs = IM.search_range(temp_index, &real_between_1, &real_between_2);
+	//						break;
+	//					}
+
+	//					case 84: {
+	//						float real_between_1;
+	//						float real_between_2;
+	//						ss >> real_between_1 >> real_between_2;
+	//						ret_indexs = IM.search_range(temp_index, &real_between_1, &real_between_2);
+	//						break;
+	//					}
+	//					default:
+	//						std::cerr << "no such type_2" << std::endl;
+	//						ret_indexs.push_back(-1); // -1 for no ret_indexs
+	//						return ret_indexs;
+	//					}
+	//				} else {
+	//					ret_indexs.push_back(-2); // -2 for all ret_indexs
+	//					return ret_indexs;
+	//				}
+	//			} else {
+	//				std::cerr << "type not match" << std::endl;
+	//				ret_indexs.push_back(-1); // -1 for no ret_indexs
+	//				return ret_indexs;
+	//			}
+
+	//		}
+	//	} else {
+	//		//TODO: to implement 3=3, 3=a 
+	//	}
+	//}
+
     return ret_indexs;
 }
 
+
+
 vector<int> API::search_where(string table_name, int comparison_type, int type_1, string comp_1, int type_2, string comp_2)
 {
-    // TODO: API search_where
-    vector<int> ret_indexs;
-    return ret_indexs;
+	vector<int> ret_indexs;
+ //   // TODO: API search_where
+	////std::vector<int> result;
+	//if (!CM.have_table(table_name)) {
+	//	std::cerr << "no such table" << std::endl;
+	//	ret_indexs.push_back(-1); // -1 for no result
+	//	return ret_indexs;
+	//} else {
+	//	TableInfo& temp_table = CM.find_table(table_name);
+	//	if (type_1 == 81) {
+	//		if (!temp_table.have_field(comp_1)) {
+	//			std::cerr << "no such column" << std::endl;
+	//			ret_indexs.push_back(-1); // -1 for no result
+	//			return ret_indexs;
+	//		} else {
+	//			FieldInfo temp_field = IM.find_field(comp_1);
+	//			if (type_2 == temp_field.get_type()) {
+	//				if (temp_table.have_index(comp_1)) {
+
+	//					std::stringstream ss;
+	//					ss << comp_2;
+
+	//					std::string temp_index = temp_table.find_index(comp_1);
+	//					switch (type_2) {
+	//					case 82: {
+	//						std::string real_comp_2;
+	//						ss >> real_comp_2;
+	//						ret_indexs = IM.search_where(temp_index, comparison_type, real_comp_2);
+	//						return ret_indexs;
+	//						break;
+	//					}
+
+	//					case 83: {
+	//						int real_comp_2;
+	//						ss >> real_comp_2;
+	//						ret_indexs = IM.search_where(temp_index, comparison_type, real_comp_2);
+	//						return ret_indexs;
+	//						break;
+	//					}
+
+	//					case 84: {
+	//						float real_comp_2;
+	//						ss >> real_comp_2;
+	//						ret_indexs = IM.search_where(temp_index, comparison_type, real_comp_2);
+	//						return ret_indexs;
+	//						break;
+	//					}
+
+	//					default:
+	//						std::cerr << "no such type_2" << std::endl;
+	//						ret_indexs.push_back(-1); // -1 for no result
+	//						return ret_indexs;
+	//					}
+	//				} else {
+	//					ret_indexs.push_back(-2); // -2 for all result
+	//					return ret_indexs;
+	//				}
+	//			} else {
+	//				std::cerr << "type not match" << std::endl;
+	//				ret_indexs.push_back(-1); // -1 for no result
+	//				return ret_indexs;
+	//			}
+
+	//		}
+	//	} else {
+	//		//TODO: to implement 3=3, 3=a 
+	//	}
+	//}
+	return ret_indexs;
 }
 
 string API::delete_all(string table_name)

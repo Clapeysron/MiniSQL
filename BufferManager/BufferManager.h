@@ -35,6 +35,7 @@ public:
     BufferManager(int blockSize, int bufferSize); // Constructor
     ~BufferManager(); // Destructor
 
+	int getNewBlockNum(string filename);
 	//some api wanted by dfz
 	int getBlockSize() {
 		return blockSize;

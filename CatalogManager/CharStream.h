@@ -1,3 +1,4 @@
+#pragma once
 #include <streambuf>
 #include <string>
 #include <cassert>
@@ -35,7 +36,7 @@ public:
     }
 
 	void resize(size_t num) {
-		assert(num >= this->gptr() - this->eback());
+		assert(int(num) >= this->gptr() - this->eback());
 		this->setg(this->eback(), this->gptr(), this->eback() + num);
 	}
 
@@ -54,11 +55,12 @@ public:
     }
 
     template<typename T>
-    CharOutStream& operator<<(T& target){
+    CharOutStream& operator<<(const T& target){
         assert(this->remain()>=sizeof(target));
         this->sputn(reinterpret_cast<const char*>(&target), sizeof(T));
         return *this;
     }
+
 
     CharOutStream& operator<<(std::string& target){
         

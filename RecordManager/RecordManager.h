@@ -4,7 +4,8 @@
 
 #ifndef SQL_RECORDMANAGER_H
 #define SQL_RECORDMANAGER_H
-#include "BufferManager.h"
+//#include "BufferManager.h"
+#include "../BufferManager/BufferManager.h"
 #include "TableStruct.h"
 
 #include <vector>

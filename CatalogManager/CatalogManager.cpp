@@ -57,15 +57,15 @@ void TableInfo::serialize(CharOutStream& couts)const {
 
 }
 
-CatalogManager::CatalogManager(std::string fileName, BufferManager& bufferManger) {
+CatalogManager::CatalogManager(std::string fileName) {
 	std::vector<char*> allBlocks;
-	bufferManger.readDatas(fileName, allBlocks);
+	BM.readDatas(fileName, allBlocks);
 	for (size_t i = 0; i < allBlocks.size(); i++) {
-		CharInStream cis(allBlocks[i], bufferManger.getBlockSize());
-		// TODO : want a getBlockSize()
+		CharInStream cis(allBlocks[i], BM.getBlockSize());
+
 		std::string table_name;
 
-		TableInfo& temp_table = TableInfo::deserialize(cis);
+		TableInfo temp_table = TableInfo::deserialize(cis);
 		_tables.emplace(temp_table.getName(), temp_table);
 	}
 }
@@ -97,14 +97,16 @@ void CatalogManager::writeBack(BufferManager& bufferManager) {
 
 void CatalogManager::add_table(TableInfo& table) {
 	if (0 == _tables.emplace(table.getName(), table).second) {
-		throw SomeError("Error: duplicate table name '" + table.getName() + "'");
+		//throw SomeError("Error: duplicate table name '" + table.getName() + "'");
+		std::cerr << "Error: duplicate table name '" + table.getName() + "'";
 	}
 	//_tables.emplace(table.getName(), table);
 }
 
 void CatalogManager::remove_table(std::string& tableName) {
 	if (0 == _tables.erase(tableName)){
-		throw SomeError("Error: no such table '" + tableName + "'");
+		//throw SomeError("Error: no such table '" + tableName + "'");
+		std::cerr << "Error: no such table '" + tableName + "'";
 	}
 }
 
@@ -113,9 +115,16 @@ TableInfo& CatalogManager::find_table(std::string& tableName) {
 	if (i != _tables.end()) {
 		return i->second;
 	} else {
-		throw SomeError("Error: no such table '" + tableName + "'");
+		//throw SomeError("Error: no such table '" + tableName + "'");
+		std::cerr << "Error: no such table '" + tableName + "'";
 	}
 }
+
+bool CatalogManager::have_table(std::string& tableName) {
+	return _tables.find(tableName) != _tables.end();
+}
+
+
 
 
 
