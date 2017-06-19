@@ -19,6 +19,7 @@ class Interpreter
 {
 public:
     void main_loop (istream& input);
+    void exe_loop (istream& input);
 };
 
 #endif /* Interpreter_hpp */

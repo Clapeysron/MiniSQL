@@ -23,11 +23,14 @@ CREATE	{ return CREATE; }
 DISTINCT	{ return DISTINCT; }
 DROP	{ return DROP; }
 DELETE	{ return DELETE; }
+EXEC { return EXEC; }
 INSERT	{ return INSERT; }
 INT|INTEGER	{ return INTEGER; }
 INTO	{ return INTO; }
 FROM  { return FROM; }
+FLOAT  { return FLOAT; }
 NULL	{ return NULLX; }
+NOT	{ return NOT; }
 INDEX|KEY { return KEY; }
 ON { return ON; }
 PRIMARY	{ return PRIMARY; }
@@ -37,7 +40,8 @@ SET	{ return SET; }
 SHOW	{ return SHOW; }
 TABLES  { return TABLES; }
 TABLE	{ return TABLE; }
-UPDATE	{ return UPDATE; }
+UPDATE	{ return UNIQUE; }
+UNIQUE	{ return UNIQUE; }
 VALUES?	{ return VALUES; }
 VARCHAR(ACTER)?	{ return VARCHAR; }
 WHERE	{ return WHERE; }
@@ -67,7 +71,6 @@ EXIT	{ return EXIT; }
 [-+&~|^/%*(),.;!]   { return yytext[0]; }
 
 "&&"		{ return ANDOP; }
-"||"            { return OR; }
 
 "="	{ yylval.subtok = 4; return COMPARISON; }
 ">="	{ yylval.subtok = 6; return COMPARISON; }

@@ -50,15 +50,15 @@ extern int yydebug;
     STRING = 260,
     INTNUM = 261,
     FLOAT = 262,
-    OR = 263,
-    ANDOP = 264,
-    BETWEEN = 265,
-    COMPARISON = 266,
-    AND = 267,
-    CREATE = 268,
-    DISTINCT = 269,
-    DELETE = 270,
-    DROP = 271,
+    ANDOP = 263,
+    BETWEEN = 264,
+    COMPARISON = 265,
+    AND = 266,
+    CREATE = 267,
+    DISTINCT = 268,
+    DELETE = 269,
+    DROP = 270,
+    EXEC = 271,
     INDEX = 272,
     INSERT = 273,
     INTO = 274,
@@ -78,10 +78,11 @@ extern int yydebug;
     TABLE = 288,
     TABLES = 289,
     UPDATE = 290,
-    VALUES = 291,
-    VARCHAR = 292,
-    WHERE = 293,
-    EXIT = 294
+    UNIQUE = 291,
+    VALUES = 292,
+    VARCHAR = 293,
+    WHERE = 294,
+    EXIT = 295
   };
 #endif
 
@@ -97,7 +98,7 @@ union YYSTYPE
 	char *strval;
 	int subtok;
 
-#line 101 "sql.tab.h" /* yacc.c:1915  */
+#line 102 "sql.tab.h" /* yacc.c:1915  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -107,7 +108,6 @@ typedef union YYSTYPE YYSTYPE;
 
 
 extern YYSTYPE yylval;
-
 #ifdef __cplusplus
 extern "C"
 #endif

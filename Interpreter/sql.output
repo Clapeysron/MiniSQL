@@ -20,222 +20,208 @@ Grammar
 
     5 stmt: insert_stmt
 
-    6 insert_stmt: INSERT INTO NAME opt_col_names VALUES insert_vals_list
+    6 insert_stmt: INSERT INTO NAME VALUES insert_vals_list
 
-    7 opt_col_names: %empty
-    8              | '(' column_list ')'
+    7 insert_vals_list: '(' insert_vals ')'
 
-    9 insert_vals_list: '(' insert_vals ')'
-   10                 | insert_vals_list ',' '(' insert_vals ')'
+    8 insert_vals: expr
+    9            | insert_vals ',' expr
 
-   11 insert_vals: expr
-   12            | insert_vals ',' expr
+   10 stmt: update_stmt
 
-   13 stmt: update_stmt
+   11 update_stmt: UPDATE NAME SET update_asgn_list opt_where
 
-   14 update_stmt: UPDATE table_references SET update_asgn_list opt_where
+   12 update_asgn_list: NAME COMPARISON update_expr
 
-   15 update_asgn_list: NAME COMPARISON expr
-   16                 | update_asgn_list ',' NAME COMPARISON expr
+   13 stmt: create_table_stmt
 
-   17 stmt: create_table_stmt
+   14 create_table_stmt: CREATE TABLE NAME '(' create_col_list ')'
 
-   18 create_table_stmt: CREATE TABLE NAME '(' create_col_list ')'
+   15 stmt: create_index_stmt
 
-   19 stmt: create_index_stmt
+   16 create_index_stmt: CREATE KEY NAME ON NAME '(' index_expr_list ')'
 
-   20 create_index_stmt: CREATE KEY NAME ON NAME '(' index_expr_list ')'
+   17 index_expr_list: column_list
+   18                | '*'
 
-   21 index_expr_list: expr
-   22                | index_expr_list ',' expr
-   23                | '*'
+   19 create_col_list: create_definition
+   20                | create_col_list ',' create_definition
 
-   24 create_col_list: create_definition
-   25                | create_col_list ',' create_definition
+   21 $@1: %empty
 
-   26 $@1: %empty
+   22 create_definition: $@1 NAME data_type column_atts
 
-   27 create_definition: $@1 NAME data_type column_atts
-   28                  | PRIMARY KEY '(' column_list ')'
-   29                  | KEY '(' column_list ')'
+   23 column_atts: %empty
+   24            | column_atts NOT NULLX
+   25            | column_atts PRIMARY KEY
+   26            | column_atts UNIQUE
 
-   30 column_atts: %empty
-   31            | column_atts NOT NULLX
-   32            | column_atts NULLX
-   33            | column_atts STRING
-   34            | column_atts INTNUM
-   35            | column_atts FLOAT
-   36            | column_atts PRIMARY KEY
+   27 opt_length: %empty
+   28           | '(' INTNUM ')'
 
-   37 opt_length: %empty
-   38           | '(' INTNUM ')'
-   39           | '(' INTNUM ',' INTNUM ')'
+   29 data_type: INTEGER opt_length
+   30          | FLOAT opt_length
+   31          | VARCHAR '(' INTNUM ')'
 
-   40 data_type: INTEGER opt_length
-   41          | FLOAT opt_length
-   42          | VARCHAR '(' INTNUM ')'
+   32 column_list: NAME
+   33            | column_list ',' NAME
 
-   43 column_list: NAME
-   44            | column_list ',' NAME
+   34 stmt: select_stmt
 
-   45 stmt: select_stmt
+   35 select_stmt: SELECT select_expr_list FROM NAME opt_where
 
-   46 select_opts: %empty
+   36 select_expr_list: select_expr
+   37                 | select_expr_list ',' select_expr
+   38                 | '*'
 
-   47 select_stmt: SELECT select_opts select_expr_list
-   48            | SELECT select_opts select_expr_list FROM table_references opt_where
+   39 select_expr: expr
 
-   49 opt_where: %empty
-   50          | WHERE expr
+   40 opt_where: %empty
+   41          | WHERE expr
 
-   51 select_expr_list: select_expr
-   52                 | select_expr_list ',' select_expr
-   53                 | '*'
+   42 stmt: drop_stmt
 
-   54 select_expr: expr
+   43 drop_stmt: DROP TABLE NAME
+   44          | DROP KEY NAME ON NAME
 
-   55 table_references: table_reference
-   56                 | table_references ',' table_reference
+   45 stmt: show_stmt
 
-   57 table_reference: NAME
+   46 show_stmt: SHOW TABLES
+   47          | SHOW STATUS
 
-   58 stmt: drop_stmt
+   48 stmt: exec_stmt
 
-   59 drop_stmt: DROP TABLE NAME
-   60          | DROP KEY NAME ON NAME
+   49 exec_stmt: EXEC NAME
+   50          | EXEC NAME '.' NAME
 
-   61 stmt: show_stmt
+   51 stmt: exit_stmt
 
-   62 show_stmt: SHOW TABLES
-   63          | SHOW STATUS
+   52 exit_stmt: EXIT
 
-   64 stmt: exit_stmt
+   53 expr: expr BETWEEN expr AND expr
+   54     | NAME
+   55     | STRING
+   56     | INTNUM
+   57     | FLOAT
+   58     | expr ANDOP expr
+   59     | expr COMPARISON expr
 
-   65 exit_stmt: EXIT
-
-   66 expr: NAME
-   67     | STRING
-   68     | INTNUM
-   69     | FLOAT
-   70     | expr ANDOP expr
-   71     | expr OR expr
-   72     | expr COMPARISON expr
-   73     | expr BETWEEN expr AND expr
+   60 update_expr: NAME
+   61            | STRING
+   62            | INTNUM
+   63            | FLOAT
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
-'(' (40) 8 9 10 18 20 28 29 38 39 42
-')' (41) 8 9 10 18 20 28 29 38 39 42
-'*' (42) 23 53
-',' (44) 10 12 16 22 25 39 44 52 56
+'(' (40) 7 14 16 28 31
+')' (41) 7 14 16 28 31
+'*' (42) 18 38
+',' (44) 9 20 33 37
+'.' (46) 50
 ';' (59) 1 2
 error (256)
-NAME (258) 4 6 15 16 18 20 27 43 44 57 59 60 66
+NAME (258) 4 6 11 12 14 16 22 32 33 35 43 44 49 50 54 60
 ERROR_STR (259)
-STRING (260) 33 67
-INTNUM (261) 34 38 39 42 68
-FLOAT (262) 35 41 69
-OR (263) 71
-ANDOP (264) 70
-BETWEEN (265) 73
-COMPARISON (266) 15 16 72
-AND (267) 73
-CREATE (268) 18 20
-DISTINCT (269)
-DELETE (270) 4
-DROP (271) 59 60
+STRING (260) 55 61
+INTNUM (261) 28 31 56 62
+FLOAT (262) 30 57 63
+ANDOP (263) 58
+BETWEEN (264) 53
+COMPARISON (265) 12 59
+AND (266) 53
+CREATE (267) 14 16
+DISTINCT (268)
+DELETE (269) 4
+DROP (270) 43 44
+EXEC (271) 49 50
 INDEX (272)
 INSERT (273) 6
 INTO (274) 6
 INT (275)
-INTEGER (276) 40
-KEY (277) 20 28 29 36 60
+INTEGER (276) 29
+KEY (277) 16 25 44
 KEYS (278)
-FROM (279) 4 48
-NULLX (280) 31 32
-NOT (281) 31
-ON (282) 20 60
-PRIMARY (283) 28 36
-SELECT (284) 47 48
-STATUS (285) 63
-SET (286) 14
-SHOW (287) 62 63
-TABLE (288) 18 59
-TABLES (289) 62
-UPDATE (290) 14
-VALUES (291) 6
-VARCHAR (292) 42
-WHERE (293) 50
-EXIT (294) 65
+FROM (279) 4 35
+NULLX (280) 24
+NOT (281) 24
+ON (282) 16 44
+PRIMARY (283) 25
+SELECT (284) 35
+STATUS (285) 47
+SET (286) 11
+SHOW (287) 46 47
+TABLE (288) 14 43
+TABLES (289) 46
+UPDATE (290) 11
+UNIQUE (291) 26
+VALUES (292) 6
+VARCHAR (293) 31
+WHERE (294) 41
+EXIT (295) 52
 
 
 Nonterminals, with rules where they appear
 
-$accept (45)
+$accept (47)
     on left: 0
-stmt_list (46)
+stmt_list (48)
     on left: 1 2, on right: 0 2
-stmt (47)
-    on left: 3 5 13 17 19 45 58 61 64, on right: 1 2
-delete_stmt (48)
+stmt (49)
+    on left: 3 5 10 13 15 34 42 45 48 51, on right: 1 2
+delete_stmt (50)
     on left: 4, on right: 3
-insert_stmt (49)
+insert_stmt (51)
     on left: 6, on right: 5
-opt_col_names (50)
-    on left: 7 8, on right: 6
-insert_vals_list (51)
-    on left: 9 10, on right: 6 10
-insert_vals (52)
-    on left: 11 12, on right: 9 10 12
-update_stmt (53)
+insert_vals_list (52)
+    on left: 7, on right: 6
+insert_vals (53)
+    on left: 8 9, on right: 7 9
+update_stmt (54)
+    on left: 11, on right: 10
+update_asgn_list (55)
+    on left: 12, on right: 11
+create_table_stmt (56)
     on left: 14, on right: 13
-update_asgn_list (54)
-    on left: 15 16, on right: 14 16
-create_table_stmt (55)
-    on left: 18, on right: 17
-create_index_stmt (56)
-    on left: 20, on right: 19
-index_expr_list (57)
-    on left: 21 22 23, on right: 20 22
-create_col_list (58)
-    on left: 24 25, on right: 18 25
-create_definition (59)
-    on left: 27 28 29, on right: 24 25
-$@1 (60)
-    on left: 26, on right: 27
-column_atts (61)
-    on left: 30 31 32 33 34 35 36, on right: 27 31 32 33 34 35 36
-opt_length (62)
-    on left: 37 38 39, on right: 40 41
-data_type (63)
-    on left: 40 41 42, on right: 27
-column_list (64)
-    on left: 43 44, on right: 8 28 29 44
-select_opts (65)
-    on left: 46, on right: 47 48
+create_index_stmt (57)
+    on left: 16, on right: 15
+index_expr_list (58)
+    on left: 17 18, on right: 16
+create_col_list (59)
+    on left: 19 20, on right: 14 20
+create_definition (60)
+    on left: 22, on right: 19 20
+$@1 (61)
+    on left: 21, on right: 22
+column_atts (62)
+    on left: 23 24 25 26, on right: 22 24 25 26
+opt_length (63)
+    on left: 27 28, on right: 29 30
+data_type (64)
+    on left: 29 30 31, on right: 22
+column_list (65)
+    on left: 32 33, on right: 17 33
 select_stmt (66)
-    on left: 47 48, on right: 45
-opt_where (67)
-    on left: 49 50, on right: 4 14 48
-select_expr_list (68)
-    on left: 51 52 53, on right: 47 48 52
-select_expr (69)
-    on left: 54, on right: 51 52
-table_references (70)
-    on left: 55 56, on right: 14 48 56
-table_reference (71)
-    on left: 57, on right: 55 56
-drop_stmt (72)
-    on left: 59 60, on right: 58
-show_stmt (73)
-    on left: 62 63, on right: 61
-exit_stmt (74)
-    on left: 65, on right: 64
-expr (75)
-    on left: 66 67 68 69 70 71 72 73, on right: 11 12 15 16 21 22 50
-    54 70 71 72 73
+    on left: 35, on right: 34
+select_expr_list (67)
+    on left: 36 37 38, on right: 35 37
+select_expr (68)
+    on left: 39, on right: 36 37
+opt_where (69)
+    on left: 40 41, on right: 4 11 35
+drop_stmt (70)
+    on left: 43 44, on right: 42
+show_stmt (71)
+    on left: 46 47, on right: 45
+exec_stmt (72)
+    on left: 49 50, on right: 48
+exit_stmt (73)
+    on left: 52, on right: 51
+expr (74)
+    on left: 53 54 55 56 57 58 59, on right: 8 9 39 41 53 58 59
+update_expr (75)
+    on left: 60 61 62 63, on right: 12
 
 
 State 0
@@ -245,1393 +231,1075 @@ State 0
     CREATE  shift, and go to state 1
     DELETE  shift, and go to state 2
     DROP    shift, and go to state 3
-    INSERT  shift, and go to state 4
-    SELECT  shift, and go to state 5
-    SHOW    shift, and go to state 6
-    UPDATE  shift, and go to state 7
-    EXIT    shift, and go to state 8
+    EXEC    shift, and go to state 4
+    INSERT  shift, and go to state 5
+    SELECT  shift, and go to state 6
+    SHOW    shift, and go to state 7
+    UPDATE  shift, and go to state 8
+    EXIT    shift, and go to state 9
 
-    stmt_list          go to state 9
-    stmt               go to state 10
-    delete_stmt        go to state 11
-    insert_stmt        go to state 12
-    update_stmt        go to state 13
-    create_table_stmt  go to state 14
-    create_index_stmt  go to state 15
-    select_stmt        go to state 16
-    drop_stmt          go to state 17
-    show_stmt          go to state 18
-    exit_stmt          go to state 19
+    stmt_list          go to state 10
+    stmt               go to state 11
+    delete_stmt        go to state 12
+    insert_stmt        go to state 13
+    update_stmt        go to state 14
+    create_table_stmt  go to state 15
+    create_index_stmt  go to state 16
+    select_stmt        go to state 17
+    drop_stmt          go to state 18
+    show_stmt          go to state 19
+    exec_stmt          go to state 20
+    exit_stmt          go to state 21
 
 
 State 1
 
-   18 create_table_stmt: CREATE . TABLE NAME '(' create_col_list ')'
-   20 create_index_stmt: CREATE . KEY NAME ON NAME '(' index_expr_list ')'
+   14 create_table_stmt: CREATE . TABLE NAME '(' create_col_list ')'
+   16 create_index_stmt: CREATE . KEY NAME ON NAME '(' index_expr_list ')'
 
-    KEY    shift, and go to state 20
-    TABLE  shift, and go to state 21
+    KEY    shift, and go to state 22
+    TABLE  shift, and go to state 23
 
 
 State 2
 
     4 delete_stmt: DELETE . FROM NAME opt_where
 
-    FROM  shift, and go to state 22
+    FROM  shift, and go to state 24
 
 
 State 3
 
-   59 drop_stmt: DROP . TABLE NAME
-   60          | DROP . KEY NAME ON NAME
+   43 drop_stmt: DROP . TABLE NAME
+   44          | DROP . KEY NAME ON NAME
 
-    KEY    shift, and go to state 23
-    TABLE  shift, and go to state 24
+    KEY    shift, and go to state 25
+    TABLE  shift, and go to state 26
 
 
 State 4
 
-    6 insert_stmt: INSERT . INTO NAME opt_col_names VALUES insert_vals_list
+   49 exec_stmt: EXEC . NAME
+   50          | EXEC . NAME '.' NAME
 
-    INTO  shift, and go to state 25
+    NAME  shift, and go to state 27
 
 
 State 5
 
-   47 select_stmt: SELECT . select_opts select_expr_list
-   48            | SELECT . select_opts select_expr_list FROM table_references opt_where
+    6 insert_stmt: INSERT . INTO NAME VALUES insert_vals_list
 
-    $default  reduce using rule 46 (select_opts)
-
-    select_opts  go to state 26
+    INTO  shift, and go to state 28
 
 
 State 6
 
-   62 show_stmt: SHOW . TABLES
-   63          | SHOW . STATUS
+   35 select_stmt: SELECT . select_expr_list FROM NAME opt_where
 
-    STATUS  shift, and go to state 27
-    TABLES  shift, and go to state 28
+    NAME    shift, and go to state 29
+    STRING  shift, and go to state 30
+    INTNUM  shift, and go to state 31
+    FLOAT   shift, and go to state 32
+    '*'     shift, and go to state 33
+
+    select_expr_list  go to state 34
+    select_expr       go to state 35
+    expr              go to state 36
 
 
 State 7
 
-   14 update_stmt: UPDATE . table_references SET update_asgn_list opt_where
+   46 show_stmt: SHOW . TABLES
+   47          | SHOW . STATUS
 
-    NAME  shift, and go to state 29
-
-    table_references  go to state 30
-    table_reference   go to state 31
+    STATUS  shift, and go to state 37
+    TABLES  shift, and go to state 38
 
 
 State 8
 
-   65 exit_stmt: EXIT .
+   11 update_stmt: UPDATE . NAME SET update_asgn_list opt_where
 
-    $default  reduce using rule 65 (exit_stmt)
+    NAME  shift, and go to state 39
 
 
 State 9
 
-    0 $accept: stmt_list . $end
-    2 stmt_list: stmt_list . stmt ';'
+   52 exit_stmt: EXIT .
 
-    $end    shift, and go to state 32
-    CREATE  shift, and go to state 1
-    DELETE  shift, and go to state 2
-    DROP    shift, and go to state 3
-    INSERT  shift, and go to state 4
-    SELECT  shift, and go to state 5
-    SHOW    shift, and go to state 6
-    UPDATE  shift, and go to state 7
-    EXIT    shift, and go to state 8
-
-    stmt               go to state 33
-    delete_stmt        go to state 11
-    insert_stmt        go to state 12
-    update_stmt        go to state 13
-    create_table_stmt  go to state 14
-    create_index_stmt  go to state 15
-    select_stmt        go to state 16
-    drop_stmt          go to state 17
-    show_stmt          go to state 18
-    exit_stmt          go to state 19
+    $default  reduce using rule 52 (exit_stmt)
 
 
 State 10
 
-    1 stmt_list: stmt . ';'
+    0 $accept: stmt_list . $end
+    2 stmt_list: stmt_list . stmt ';'
 
-    ';'  shift, and go to state 34
+    $end    shift, and go to state 40
+    CREATE  shift, and go to state 1
+    DELETE  shift, and go to state 2
+    DROP    shift, and go to state 3
+    EXEC    shift, and go to state 4
+    INSERT  shift, and go to state 5
+    SELECT  shift, and go to state 6
+    SHOW    shift, and go to state 7
+    UPDATE  shift, and go to state 8
+    EXIT    shift, and go to state 9
+
+    stmt               go to state 41
+    delete_stmt        go to state 12
+    insert_stmt        go to state 13
+    update_stmt        go to state 14
+    create_table_stmt  go to state 15
+    create_index_stmt  go to state 16
+    select_stmt        go to state 17
+    drop_stmt          go to state 18
+    show_stmt          go to state 19
+    exec_stmt          go to state 20
+    exit_stmt          go to state 21
 
 
 State 11
+
+    1 stmt_list: stmt . ';'
+
+    ';'  shift, and go to state 42
+
+
+State 12
 
     3 stmt: delete_stmt .
 
     $default  reduce using rule 3 (stmt)
 
 
-State 12
+State 13
 
     5 stmt: insert_stmt .
 
     $default  reduce using rule 5 (stmt)
 
 
-State 13
-
-   13 stmt: update_stmt .
-
-    $default  reduce using rule 13 (stmt)
-
-
 State 14
 
-   17 stmt: create_table_stmt .
+   10 stmt: update_stmt .
 
-    $default  reduce using rule 17 (stmt)
+    $default  reduce using rule 10 (stmt)
 
 
 State 15
 
-   19 stmt: create_index_stmt .
+   13 stmt: create_table_stmt .
 
-    $default  reduce using rule 19 (stmt)
+    $default  reduce using rule 13 (stmt)
 
 
 State 16
 
-   45 stmt: select_stmt .
+   15 stmt: create_index_stmt .
 
-    $default  reduce using rule 45 (stmt)
+    $default  reduce using rule 15 (stmt)
 
 
 State 17
 
-   58 stmt: drop_stmt .
+   34 stmt: select_stmt .
 
-    $default  reduce using rule 58 (stmt)
+    $default  reduce using rule 34 (stmt)
 
 
 State 18
 
-   61 stmt: show_stmt .
+   42 stmt: drop_stmt .
 
-    $default  reduce using rule 61 (stmt)
+    $default  reduce using rule 42 (stmt)
 
 
 State 19
 
-   64 stmt: exit_stmt .
+   45 stmt: show_stmt .
 
-    $default  reduce using rule 64 (stmt)
+    $default  reduce using rule 45 (stmt)
 
 
 State 20
 
-   20 create_index_stmt: CREATE KEY . NAME ON NAME '(' index_expr_list ')'
+   48 stmt: exec_stmt .
 
-    NAME  shift, and go to state 35
+    $default  reduce using rule 48 (stmt)
 
 
 State 21
 
-   18 create_table_stmt: CREATE TABLE . NAME '(' create_col_list ')'
+   51 stmt: exit_stmt .
 
-    NAME  shift, and go to state 36
+    $default  reduce using rule 51 (stmt)
 
 
 State 22
 
-    4 delete_stmt: DELETE FROM . NAME opt_where
+   16 create_index_stmt: CREATE KEY . NAME ON NAME '(' index_expr_list ')'
 
-    NAME  shift, and go to state 37
+    NAME  shift, and go to state 43
 
 
 State 23
 
-   60 drop_stmt: DROP KEY . NAME ON NAME
+   14 create_table_stmt: CREATE TABLE . NAME '(' create_col_list ')'
 
-    NAME  shift, and go to state 38
+    NAME  shift, and go to state 44
 
 
 State 24
 
-   59 drop_stmt: DROP TABLE . NAME
+    4 delete_stmt: DELETE FROM . NAME opt_where
 
-    NAME  shift, and go to state 39
+    NAME  shift, and go to state 45
 
 
 State 25
 
-    6 insert_stmt: INSERT INTO . NAME opt_col_names VALUES insert_vals_list
+   44 drop_stmt: DROP KEY . NAME ON NAME
 
-    NAME  shift, and go to state 40
+    NAME  shift, and go to state 46
 
 
 State 26
 
-   47 select_stmt: SELECT select_opts . select_expr_list
-   48            | SELECT select_opts . select_expr_list FROM table_references opt_where
+   43 drop_stmt: DROP TABLE . NAME
 
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
-    '*'     shift, and go to state 45
-
-    select_expr_list  go to state 46
-    select_expr       go to state 47
-    expr              go to state 48
+    NAME  shift, and go to state 47
 
 
 State 27
 
-   63 show_stmt: SHOW STATUS .
+   49 exec_stmt: EXEC NAME .
+   50          | EXEC NAME . '.' NAME
 
-    $default  reduce using rule 63 (show_stmt)
+    '.'  shift, and go to state 48
+
+    $default  reduce using rule 49 (exec_stmt)
 
 
 State 28
 
-   62 show_stmt: SHOW TABLES .
+    6 insert_stmt: INSERT INTO . NAME VALUES insert_vals_list
 
-    $default  reduce using rule 62 (show_stmt)
+    NAME  shift, and go to state 49
 
 
 State 29
 
-   57 table_reference: NAME .
+   54 expr: NAME .
 
-    $default  reduce using rule 57 (table_reference)
+    $default  reduce using rule 54 (expr)
 
 
 State 30
 
-   14 update_stmt: UPDATE table_references . SET update_asgn_list opt_where
-   56 table_references: table_references . ',' table_reference
+   55 expr: STRING .
 
-    SET  shift, and go to state 49
-    ','  shift, and go to state 50
+    $default  reduce using rule 55 (expr)
 
 
 State 31
 
-   55 table_references: table_reference .
+   56 expr: INTNUM .
 
-    $default  reduce using rule 55 (table_references)
+    $default  reduce using rule 56 (expr)
 
 
 State 32
+
+   57 expr: FLOAT .
+
+    $default  reduce using rule 57 (expr)
+
+
+State 33
+
+   38 select_expr_list: '*' .
+
+    $default  reduce using rule 38 (select_expr_list)
+
+
+State 34
+
+   35 select_stmt: SELECT select_expr_list . FROM NAME opt_where
+   37 select_expr_list: select_expr_list . ',' select_expr
+
+    FROM  shift, and go to state 50
+    ','   shift, and go to state 51
+
+
+State 35
+
+   36 select_expr_list: select_expr .
+
+    $default  reduce using rule 36 (select_expr_list)
+
+
+State 36
+
+   39 select_expr: expr .
+   53 expr: expr . BETWEEN expr AND expr
+   58     | expr . ANDOP expr
+   59     | expr . COMPARISON expr
+
+    ANDOP       shift, and go to state 52
+    BETWEEN     shift, and go to state 53
+    COMPARISON  shift, and go to state 54
+
+    $default  reduce using rule 39 (select_expr)
+
+
+State 37
+
+   47 show_stmt: SHOW STATUS .
+
+    $default  reduce using rule 47 (show_stmt)
+
+
+State 38
+
+   46 show_stmt: SHOW TABLES .
+
+    $default  reduce using rule 46 (show_stmt)
+
+
+State 39
+
+   11 update_stmt: UPDATE NAME . SET update_asgn_list opt_where
+
+    SET  shift, and go to state 55
+
+
+State 40
 
     0 $accept: stmt_list $end .
 
     $default  accept
 
 
-State 33
+State 41
 
     2 stmt_list: stmt_list stmt . ';'
 
-    ';'  shift, and go to state 51
+    ';'  shift, and go to state 56
 
 
-State 34
+State 42
 
     1 stmt_list: stmt ';' .
 
     $default  reduce using rule 1 (stmt_list)
 
 
-State 35
-
-   20 create_index_stmt: CREATE KEY NAME . ON NAME '(' index_expr_list ')'
-
-    ON  shift, and go to state 52
-
-
-State 36
-
-   18 create_table_stmt: CREATE TABLE NAME . '(' create_col_list ')'
-
-    '('  shift, and go to state 53
-
-
-State 37
-
-    4 delete_stmt: DELETE FROM NAME . opt_where
-
-    WHERE  shift, and go to state 54
-
-    $default  reduce using rule 49 (opt_where)
-
-    opt_where  go to state 55
-
-
-State 38
-
-   60 drop_stmt: DROP KEY NAME . ON NAME
-
-    ON  shift, and go to state 56
-
-
-State 39
-
-   59 drop_stmt: DROP TABLE NAME .
-
-    $default  reduce using rule 59 (drop_stmt)
-
-
-State 40
-
-    6 insert_stmt: INSERT INTO NAME . opt_col_names VALUES insert_vals_list
-
-    '('  shift, and go to state 57
-
-    $default  reduce using rule 7 (opt_col_names)
-
-    opt_col_names  go to state 58
-
-
-State 41
-
-   66 expr: NAME .
-
-    $default  reduce using rule 66 (expr)
-
-
-State 42
-
-   67 expr: STRING .
-
-    $default  reduce using rule 67 (expr)
-
-
 State 43
 
-   68 expr: INTNUM .
+   16 create_index_stmt: CREATE KEY NAME . ON NAME '(' index_expr_list ')'
 
-    $default  reduce using rule 68 (expr)
+    ON  shift, and go to state 57
 
 
 State 44
 
-   69 expr: FLOAT .
+   14 create_table_stmt: CREATE TABLE NAME . '(' create_col_list ')'
 
-    $default  reduce using rule 69 (expr)
+    '('  shift, and go to state 58
 
 
 State 45
 
-   53 select_expr_list: '*' .
+    4 delete_stmt: DELETE FROM NAME . opt_where
 
-    $default  reduce using rule 53 (select_expr_list)
+    WHERE  shift, and go to state 59
+
+    $default  reduce using rule 40 (opt_where)
+
+    opt_where  go to state 60
 
 
 State 46
 
-   47 select_stmt: SELECT select_opts select_expr_list .
-   48            | SELECT select_opts select_expr_list . FROM table_references opt_where
-   52 select_expr_list: select_expr_list . ',' select_expr
+   44 drop_stmt: DROP KEY NAME . ON NAME
 
-    FROM  shift, and go to state 59
-    ','   shift, and go to state 60
-
-    $default  reduce using rule 47 (select_stmt)
+    ON  shift, and go to state 61
 
 
 State 47
 
-   51 select_expr_list: select_expr .
+   43 drop_stmt: DROP TABLE NAME .
 
-    $default  reduce using rule 51 (select_expr_list)
+    $default  reduce using rule 43 (drop_stmt)
 
 
 State 48
 
-   54 select_expr: expr .
-   70 expr: expr . ANDOP expr
-   71     | expr . OR expr
-   72     | expr . COMPARISON expr
-   73     | expr . BETWEEN expr AND expr
+   50 exec_stmt: EXEC NAME '.' . NAME
 
-    OR          shift, and go to state 61
-    ANDOP       shift, and go to state 62
-    BETWEEN     shift, and go to state 63
-    COMPARISON  shift, and go to state 64
-
-    $default  reduce using rule 54 (select_expr)
+    NAME  shift, and go to state 62
 
 
 State 49
 
-   14 update_stmt: UPDATE table_references SET . update_asgn_list opt_where
+    6 insert_stmt: INSERT INTO NAME . VALUES insert_vals_list
 
-    NAME  shift, and go to state 65
-
-    update_asgn_list  go to state 66
+    VALUES  shift, and go to state 63
 
 
 State 50
 
-   56 table_references: table_references ',' . table_reference
+   35 select_stmt: SELECT select_expr_list FROM . NAME opt_where
 
-    NAME  shift, and go to state 29
-
-    table_reference  go to state 67
+    NAME  shift, and go to state 64
 
 
 State 51
+
+   37 select_expr_list: select_expr_list ',' . select_expr
+
+    NAME    shift, and go to state 29
+    STRING  shift, and go to state 30
+    INTNUM  shift, and go to state 31
+    FLOAT   shift, and go to state 32
+
+    select_expr  go to state 65
+    expr         go to state 36
+
+
+State 52
+
+   58 expr: expr ANDOP . expr
+
+    NAME    shift, and go to state 29
+    STRING  shift, and go to state 30
+    INTNUM  shift, and go to state 31
+    FLOAT   shift, and go to state 32
+
+    expr  go to state 66
+
+
+State 53
+
+   53 expr: expr BETWEEN . expr AND expr
+
+    NAME    shift, and go to state 29
+    STRING  shift, and go to state 30
+    INTNUM  shift, and go to state 31
+    FLOAT   shift, and go to state 32
+
+    expr  go to state 67
+
+
+State 54
+
+   59 expr: expr COMPARISON . expr
+
+    NAME    shift, and go to state 29
+    STRING  shift, and go to state 30
+    INTNUM  shift, and go to state 31
+    FLOAT   shift, and go to state 32
+
+    expr  go to state 68
+
+
+State 55
+
+   11 update_stmt: UPDATE NAME SET . update_asgn_list opt_where
+
+    NAME  shift, and go to state 69
+
+    update_asgn_list  go to state 70
+
+
+State 56
 
     2 stmt_list: stmt_list stmt ';' .
 
     $default  reduce using rule 2 (stmt_list)
 
 
-State 52
+State 57
 
-   20 create_index_stmt: CREATE KEY NAME ON . NAME '(' index_expr_list ')'
+   16 create_index_stmt: CREATE KEY NAME ON . NAME '(' index_expr_list ')'
 
-    NAME  shift, and go to state 68
-
-
-State 53
-
-   18 create_table_stmt: CREATE TABLE NAME '(' . create_col_list ')'
-
-    KEY      shift, and go to state 69
-    PRIMARY  shift, and go to state 70
-
-    $default  reduce using rule 26 ($@1)
-
-    create_col_list    go to state 71
-    create_definition  go to state 72
-    $@1                go to state 73
+    NAME  shift, and go to state 71
 
 
-State 54
+State 58
 
-   50 opt_where: WHERE . expr
+   14 create_table_stmt: CREATE TABLE NAME '(' . create_col_list ')'
 
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
+    $default  reduce using rule 21 ($@1)
 
-    expr  go to state 74
+    create_col_list    go to state 72
+    create_definition  go to state 73
+    $@1                go to state 74
 
 
-State 55
+State 59
+
+   41 opt_where: WHERE . expr
+
+    NAME    shift, and go to state 29
+    STRING  shift, and go to state 30
+    INTNUM  shift, and go to state 31
+    FLOAT   shift, and go to state 32
+
+    expr  go to state 75
+
+
+State 60
 
     4 delete_stmt: DELETE FROM NAME opt_where .
 
     $default  reduce using rule 4 (delete_stmt)
 
 
-State 56
-
-   60 drop_stmt: DROP KEY NAME ON . NAME
-
-    NAME  shift, and go to state 75
-
-
-State 57
-
-    8 opt_col_names: '(' . column_list ')'
-
-    NAME  shift, and go to state 76
-
-    column_list  go to state 77
-
-
-State 58
-
-    6 insert_stmt: INSERT INTO NAME opt_col_names . VALUES insert_vals_list
-
-    VALUES  shift, and go to state 78
-
-
-State 59
-
-   48 select_stmt: SELECT select_opts select_expr_list FROM . table_references opt_where
-
-    NAME  shift, and go to state 29
-
-    table_references  go to state 79
-    table_reference   go to state 31
-
-
-State 60
-
-   52 select_expr_list: select_expr_list ',' . select_expr
-
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
-
-    select_expr  go to state 80
-    expr         go to state 48
-
-
 State 61
 
-   71 expr: expr OR . expr
+   44 drop_stmt: DROP KEY NAME ON . NAME
 
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
-
-    expr  go to state 81
+    NAME  shift, and go to state 76
 
 
 State 62
 
-   70 expr: expr ANDOP . expr
+   50 exec_stmt: EXEC NAME '.' NAME .
 
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
-
-    expr  go to state 82
+    $default  reduce using rule 50 (exec_stmt)
 
 
 State 63
 
-   73 expr: expr BETWEEN . expr AND expr
+    6 insert_stmt: INSERT INTO NAME VALUES . insert_vals_list
 
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
+    '('  shift, and go to state 77
 
-    expr  go to state 83
+    insert_vals_list  go to state 78
 
 
 State 64
 
-   72 expr: expr COMPARISON . expr
+   35 select_stmt: SELECT select_expr_list FROM NAME . opt_where
 
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
+    WHERE  shift, and go to state 59
 
-    expr  go to state 84
+    $default  reduce using rule 40 (opt_where)
+
+    opt_where  go to state 79
 
 
 State 65
 
-   15 update_asgn_list: NAME . COMPARISON expr
+   37 select_expr_list: select_expr_list ',' select_expr .
 
-    COMPARISON  shift, and go to state 85
+    $default  reduce using rule 37 (select_expr_list)
 
 
 State 66
 
-   14 update_stmt: UPDATE table_references SET update_asgn_list . opt_where
-   16 update_asgn_list: update_asgn_list . ',' NAME COMPARISON expr
+   53 expr: expr . BETWEEN expr AND expr
+   58     | expr . ANDOP expr
+   58     | expr ANDOP expr .
+   59     | expr . COMPARISON expr
 
-    WHERE  shift, and go to state 54
-    ','    shift, and go to state 86
+    BETWEEN     shift, and go to state 53
+    COMPARISON  shift, and go to state 54
 
-    $default  reduce using rule 49 (opt_where)
-
-    opt_where  go to state 87
+    $default  reduce using rule 58 (expr)
 
 
 State 67
 
-   56 table_references: table_references ',' table_reference .
+   53 expr: expr . BETWEEN expr AND expr
+   53     | expr BETWEEN expr . AND expr
+   58     | expr . ANDOP expr
+   59     | expr . COMPARISON expr
 
-    $default  reduce using rule 56 (table_references)
+    ANDOP       shift, and go to state 52
+    BETWEEN     shift, and go to state 53
+    COMPARISON  shift, and go to state 54
+    AND         shift, and go to state 80
 
 
 State 68
 
-   20 create_index_stmt: CREATE KEY NAME ON NAME . '(' index_expr_list ')'
+   53 expr: expr . BETWEEN expr AND expr
+   58     | expr . ANDOP expr
+   59     | expr . COMPARISON expr
+   59     | expr COMPARISON expr .
 
-    '('  shift, and go to state 88
+    $default  reduce using rule 59 (expr)
 
 
 State 69
 
-   29 create_definition: KEY . '(' column_list ')'
+   12 update_asgn_list: NAME . COMPARISON update_expr
 
-    '('  shift, and go to state 89
+    COMPARISON  shift, and go to state 81
 
 
 State 70
 
-   28 create_definition: PRIMARY . KEY '(' column_list ')'
+   11 update_stmt: UPDATE NAME SET update_asgn_list . opt_where
 
-    KEY  shift, and go to state 90
+    WHERE  shift, and go to state 59
+
+    $default  reduce using rule 40 (opt_where)
+
+    opt_where  go to state 82
 
 
 State 71
 
-   18 create_table_stmt: CREATE TABLE NAME '(' create_col_list . ')'
-   25 create_col_list: create_col_list . ',' create_definition
+   16 create_index_stmt: CREATE KEY NAME ON NAME . '(' index_expr_list ')'
 
-    ')'  shift, and go to state 91
-    ','  shift, and go to state 92
+    '('  shift, and go to state 83
 
 
 State 72
 
-   24 create_col_list: create_definition .
+   14 create_table_stmt: CREATE TABLE NAME '(' create_col_list . ')'
+   20 create_col_list: create_col_list . ',' create_definition
 
-    $default  reduce using rule 24 (create_col_list)
+    ')'  shift, and go to state 84
+    ','  shift, and go to state 85
 
 
 State 73
 
-   27 create_definition: $@1 . NAME data_type column_atts
+   19 create_col_list: create_definition .
 
-    NAME  shift, and go to state 93
+    $default  reduce using rule 19 (create_col_list)
 
 
 State 74
 
-   50 opt_where: WHERE expr .
-   70 expr: expr . ANDOP expr
-   71     | expr . OR expr
-   72     | expr . COMPARISON expr
-   73     | expr . BETWEEN expr AND expr
+   22 create_definition: $@1 . NAME data_type column_atts
 
-    OR          shift, and go to state 61
-    ANDOP       shift, and go to state 62
-    BETWEEN     shift, and go to state 63
-    COMPARISON  shift, and go to state 64
-
-    $default  reduce using rule 50 (opt_where)
+    NAME  shift, and go to state 86
 
 
 State 75
 
-   60 drop_stmt: DROP KEY NAME ON NAME .
+   41 opt_where: WHERE expr .
+   53 expr: expr . BETWEEN expr AND expr
+   58     | expr . ANDOP expr
+   59     | expr . COMPARISON expr
 
-    $default  reduce using rule 60 (drop_stmt)
+    ANDOP       shift, and go to state 52
+    BETWEEN     shift, and go to state 53
+    COMPARISON  shift, and go to state 54
+
+    $default  reduce using rule 41 (opt_where)
 
 
 State 76
 
-   43 column_list: NAME .
+   44 drop_stmt: DROP KEY NAME ON NAME .
 
-    $default  reduce using rule 43 (column_list)
+    $default  reduce using rule 44 (drop_stmt)
 
 
 State 77
 
-    8 opt_col_names: '(' column_list . ')'
-   44 column_list: column_list . ',' NAME
+    7 insert_vals_list: '(' . insert_vals ')'
 
-    ')'  shift, and go to state 94
-    ','  shift, and go to state 95
+    NAME    shift, and go to state 29
+    STRING  shift, and go to state 30
+    INTNUM  shift, and go to state 31
+    FLOAT   shift, and go to state 32
+
+    insert_vals  go to state 87
+    expr         go to state 88
 
 
 State 78
 
-    6 insert_stmt: INSERT INTO NAME opt_col_names VALUES . insert_vals_list
-
-    '('  shift, and go to state 96
-
-    insert_vals_list  go to state 97
-
-
-State 79
-
-   48 select_stmt: SELECT select_opts select_expr_list FROM table_references . opt_where
-   56 table_references: table_references . ',' table_reference
-
-    WHERE  shift, and go to state 54
-    ','    shift, and go to state 50
-
-    $default  reduce using rule 49 (opt_where)
-
-    opt_where  go to state 98
-
-
-State 80
-
-   52 select_expr_list: select_expr_list ',' select_expr .
-
-    $default  reduce using rule 52 (select_expr_list)
-
-
-State 81
-
-   70 expr: expr . ANDOP expr
-   71     | expr . OR expr
-   71     | expr OR expr .
-   72     | expr . COMPARISON expr
-   73     | expr . BETWEEN expr AND expr
-
-    ANDOP       shift, and go to state 62
-    BETWEEN     shift, and go to state 63
-    COMPARISON  shift, and go to state 64
-
-    $default  reduce using rule 71 (expr)
-
-
-State 82
-
-   70 expr: expr . ANDOP expr
-   70     | expr ANDOP expr .
-   71     | expr . OR expr
-   72     | expr . COMPARISON expr
-   73     | expr . BETWEEN expr AND expr
-
-    BETWEEN     shift, and go to state 63
-    COMPARISON  shift, and go to state 64
-
-    $default  reduce using rule 70 (expr)
-
-
-State 83
-
-   70 expr: expr . ANDOP expr
-   71     | expr . OR expr
-   72     | expr . COMPARISON expr
-   73     | expr . BETWEEN expr AND expr
-   73     | expr BETWEEN expr . AND expr
-
-    OR          shift, and go to state 61
-    ANDOP       shift, and go to state 62
-    BETWEEN     shift, and go to state 63
-    COMPARISON  shift, and go to state 64
-    AND         shift, and go to state 99
-
-
-State 84
-
-   70 expr: expr . ANDOP expr
-   71     | expr . OR expr
-   72     | expr . COMPARISON expr
-   72     | expr COMPARISON expr .
-   73     | expr . BETWEEN expr AND expr
-
-    $default  reduce using rule 72 (expr)
-
-
-State 85
-
-   15 update_asgn_list: NAME COMPARISON . expr
-
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
-
-    expr  go to state 100
-
-
-State 86
-
-   16 update_asgn_list: update_asgn_list ',' . NAME COMPARISON expr
-
-    NAME  shift, and go to state 101
-
-
-State 87
-
-   14 update_stmt: UPDATE table_references SET update_asgn_list opt_where .
-
-    $default  reduce using rule 14 (update_stmt)
-
-
-State 88
-
-   20 create_index_stmt: CREATE KEY NAME ON NAME '(' . index_expr_list ')'
-
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
-    '*'     shift, and go to state 102
-
-    index_expr_list  go to state 103
-    expr             go to state 104
-
-
-State 89
-
-   29 create_definition: KEY '(' . column_list ')'
-
-    NAME  shift, and go to state 76
-
-    column_list  go to state 105
-
-
-State 90
-
-   28 create_definition: PRIMARY KEY . '(' column_list ')'
-
-    '('  shift, and go to state 106
-
-
-State 91
-
-   18 create_table_stmt: CREATE TABLE NAME '(' create_col_list ')' .
-
-    $default  reduce using rule 18 (create_table_stmt)
-
-
-State 92
-
-   25 create_col_list: create_col_list ',' . create_definition
-
-    KEY      shift, and go to state 69
-    PRIMARY  shift, and go to state 70
-
-    $default  reduce using rule 26 ($@1)
-
-    create_definition  go to state 107
-    $@1                go to state 73
-
-
-State 93
-
-   27 create_definition: $@1 NAME . data_type column_atts
-
-    FLOAT    shift, and go to state 108
-    INTEGER  shift, and go to state 109
-    VARCHAR  shift, and go to state 110
-
-    data_type  go to state 111
-
-
-State 94
-
-    8 opt_col_names: '(' column_list ')' .
-
-    $default  reduce using rule 8 (opt_col_names)
-
-
-State 95
-
-   44 column_list: column_list ',' . NAME
-
-    NAME  shift, and go to state 112
-
-
-State 96
-
-    9 insert_vals_list: '(' . insert_vals ')'
-
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
-
-    insert_vals  go to state 113
-    expr         go to state 114
-
-
-State 97
-
-    6 insert_stmt: INSERT INTO NAME opt_col_names VALUES insert_vals_list .
-   10 insert_vals_list: insert_vals_list . ',' '(' insert_vals ')'
-
-    ','  shift, and go to state 115
+    6 insert_stmt: INSERT INTO NAME VALUES insert_vals_list .
 
     $default  reduce using rule 6 (insert_stmt)
 
 
+State 79
+
+   35 select_stmt: SELECT select_expr_list FROM NAME opt_where .
+
+    $default  reduce using rule 35 (select_stmt)
+
+
+State 80
+
+   53 expr: expr BETWEEN expr AND . expr
+
+    NAME    shift, and go to state 29
+    STRING  shift, and go to state 30
+    INTNUM  shift, and go to state 31
+    FLOAT   shift, and go to state 32
+
+    expr  go to state 89
+
+
+State 81
+
+   12 update_asgn_list: NAME COMPARISON . update_expr
+
+    NAME    shift, and go to state 90
+    STRING  shift, and go to state 91
+    INTNUM  shift, and go to state 92
+    FLOAT   shift, and go to state 93
+
+    update_expr  go to state 94
+
+
+State 82
+
+   11 update_stmt: UPDATE NAME SET update_asgn_list opt_where .
+
+    $default  reduce using rule 11 (update_stmt)
+
+
+State 83
+
+   16 create_index_stmt: CREATE KEY NAME ON NAME '(' . index_expr_list ')'
+
+    NAME  shift, and go to state 95
+    '*'   shift, and go to state 96
+
+    index_expr_list  go to state 97
+    column_list      go to state 98
+
+
+State 84
+
+   14 create_table_stmt: CREATE TABLE NAME '(' create_col_list ')' .
+
+    $default  reduce using rule 14 (create_table_stmt)
+
+
+State 85
+
+   20 create_col_list: create_col_list ',' . create_definition
+
+    $default  reduce using rule 21 ($@1)
+
+    create_definition  go to state 99
+    $@1                go to state 74
+
+
+State 86
+
+   22 create_definition: $@1 NAME . data_type column_atts
+
+    FLOAT    shift, and go to state 100
+    INTEGER  shift, and go to state 101
+    VARCHAR  shift, and go to state 102
+
+    data_type  go to state 103
+
+
+State 87
+
+    7 insert_vals_list: '(' insert_vals . ')'
+    9 insert_vals: insert_vals . ',' expr
+
+    ')'  shift, and go to state 104
+    ','  shift, and go to state 105
+
+
+State 88
+
+    8 insert_vals: expr .
+   53 expr: expr . BETWEEN expr AND expr
+   58     | expr . ANDOP expr
+   59     | expr . COMPARISON expr
+
+    ANDOP       shift, and go to state 52
+    BETWEEN     shift, and go to state 53
+    COMPARISON  shift, and go to state 54
+
+    $default  reduce using rule 8 (insert_vals)
+
+
+State 89
+
+   53 expr: expr . BETWEEN expr AND expr
+   53     | expr BETWEEN expr AND expr .
+   58     | expr . ANDOP expr
+   59     | expr . COMPARISON expr
+
+    COMPARISON  shift, and go to state 54
+
+    $default  reduce using rule 53 (expr)
+
+
+State 90
+
+   60 update_expr: NAME .
+
+    $default  reduce using rule 60 (update_expr)
+
+
+State 91
+
+   61 update_expr: STRING .
+
+    $default  reduce using rule 61 (update_expr)
+
+
+State 92
+
+   62 update_expr: INTNUM .
+
+    $default  reduce using rule 62 (update_expr)
+
+
+State 93
+
+   63 update_expr: FLOAT .
+
+    $default  reduce using rule 63 (update_expr)
+
+
+State 94
+
+   12 update_asgn_list: NAME COMPARISON update_expr .
+
+    $default  reduce using rule 12 (update_asgn_list)
+
+
+State 95
+
+   32 column_list: NAME .
+
+    $default  reduce using rule 32 (column_list)
+
+
+State 96
+
+   18 index_expr_list: '*' .
+
+    $default  reduce using rule 18 (index_expr_list)
+
+
+State 97
+
+   16 create_index_stmt: CREATE KEY NAME ON NAME '(' index_expr_list . ')'
+
+    ')'  shift, and go to state 106
+
+
 State 98
 
-   48 select_stmt: SELECT select_opts select_expr_list FROM table_references opt_where .
+   17 index_expr_list: column_list .
+   33 column_list: column_list . ',' NAME
 
-    $default  reduce using rule 48 (select_stmt)
+    ','  shift, and go to state 107
+
+    $default  reduce using rule 17 (index_expr_list)
 
 
 State 99
 
-   73 expr: expr BETWEEN expr AND . expr
+   20 create_col_list: create_col_list ',' create_definition .
 
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
-
-    expr  go to state 116
+    $default  reduce using rule 20 (create_col_list)
 
 
 State 100
 
-   15 update_asgn_list: NAME COMPARISON expr .
-   70 expr: expr . ANDOP expr
-   71     | expr . OR expr
-   72     | expr . COMPARISON expr
-   73     | expr . BETWEEN expr AND expr
+   30 data_type: FLOAT . opt_length
 
-    OR          shift, and go to state 61
-    ANDOP       shift, and go to state 62
-    BETWEEN     shift, and go to state 63
-    COMPARISON  shift, and go to state 64
+    '('  shift, and go to state 108
 
-    $default  reduce using rule 15 (update_asgn_list)
+    $default  reduce using rule 27 (opt_length)
+
+    opt_length  go to state 109
 
 
 State 101
 
-   16 update_asgn_list: update_asgn_list ',' NAME . COMPARISON expr
+   29 data_type: INTEGER . opt_length
 
-    COMPARISON  shift, and go to state 117
+    '('  shift, and go to state 108
+
+    $default  reduce using rule 27 (opt_length)
+
+    opt_length  go to state 110
 
 
 State 102
 
-   23 index_expr_list: '*' .
+   31 data_type: VARCHAR . '(' INTNUM ')'
 
-    $default  reduce using rule 23 (index_expr_list)
+    '('  shift, and go to state 111
 
 
 State 103
 
-   20 create_index_stmt: CREATE KEY NAME ON NAME '(' index_expr_list . ')'
-   22 index_expr_list: index_expr_list . ',' expr
+   22 create_definition: $@1 NAME data_type . column_atts
 
-    ')'  shift, and go to state 118
-    ','  shift, and go to state 119
+    $default  reduce using rule 23 (column_atts)
+
+    column_atts  go to state 112
 
 
 State 104
 
-   21 index_expr_list: expr .
-   70 expr: expr . ANDOP expr
-   71     | expr . OR expr
-   72     | expr . COMPARISON expr
-   73     | expr . BETWEEN expr AND expr
+    7 insert_vals_list: '(' insert_vals ')' .
 
-    OR          shift, and go to state 61
-    ANDOP       shift, and go to state 62
-    BETWEEN     shift, and go to state 63
-    COMPARISON  shift, and go to state 64
-
-    $default  reduce using rule 21 (index_expr_list)
+    $default  reduce using rule 7 (insert_vals_list)
 
 
 State 105
 
-   29 create_definition: KEY '(' column_list . ')'
-   44 column_list: column_list . ',' NAME
+    9 insert_vals: insert_vals ',' . expr
 
-    ')'  shift, and go to state 120
-    ','  shift, and go to state 95
+    NAME    shift, and go to state 29
+    STRING  shift, and go to state 30
+    INTNUM  shift, and go to state 31
+    FLOAT   shift, and go to state 32
+
+    expr  go to state 113
 
 
 State 106
 
-   28 create_definition: PRIMARY KEY '(' . column_list ')'
+   16 create_index_stmt: CREATE KEY NAME ON NAME '(' index_expr_list ')' .
 
-    NAME  shift, and go to state 76
-
-    column_list  go to state 121
+    $default  reduce using rule 16 (create_index_stmt)
 
 
 State 107
 
-   25 create_col_list: create_col_list ',' create_definition .
+   33 column_list: column_list ',' . NAME
 
-    $default  reduce using rule 25 (create_col_list)
+    NAME  shift, and go to state 114
 
 
 State 108
 
-   41 data_type: FLOAT . opt_length
+   28 opt_length: '(' . INTNUM ')'
 
-    '('  shift, and go to state 122
-
-    $default  reduce using rule 37 (opt_length)
-
-    opt_length  go to state 123
+    INTNUM  shift, and go to state 115
 
 
 State 109
 
-   40 data_type: INTEGER . opt_length
+   30 data_type: FLOAT opt_length .
 
-    '('  shift, and go to state 122
-
-    $default  reduce using rule 37 (opt_length)
-
-    opt_length  go to state 124
+    $default  reduce using rule 30 (data_type)
 
 
 State 110
 
-   42 data_type: VARCHAR . '(' INTNUM ')'
+   29 data_type: INTEGER opt_length .
 
-    '('  shift, and go to state 125
+    $default  reduce using rule 29 (data_type)
 
 
 State 111
 
-   27 create_definition: $@1 NAME data_type . column_atts
+   31 data_type: VARCHAR '(' . INTNUM ')'
 
-    $default  reduce using rule 30 (column_atts)
-
-    column_atts  go to state 126
+    INTNUM  shift, and go to state 116
 
 
 State 112
 
-   44 column_list: column_list ',' NAME .
+   22 create_definition: $@1 NAME data_type column_atts .
+   24 column_atts: column_atts . NOT NULLX
+   25            | column_atts . PRIMARY KEY
+   26            | column_atts . UNIQUE
 
-    $default  reduce using rule 44 (column_list)
+    NOT      shift, and go to state 117
+    PRIMARY  shift, and go to state 118
+    UNIQUE   shift, and go to state 119
+
+    $default  reduce using rule 22 (create_definition)
 
 
 State 113
 
-    9 insert_vals_list: '(' insert_vals . ')'
-   12 insert_vals: insert_vals . ',' expr
+    9 insert_vals: insert_vals ',' expr .
+   53 expr: expr . BETWEEN expr AND expr
+   58     | expr . ANDOP expr
+   59     | expr . COMPARISON expr
 
-    ')'  shift, and go to state 127
-    ','  shift, and go to state 128
+    ANDOP       shift, and go to state 52
+    BETWEEN     shift, and go to state 53
+    COMPARISON  shift, and go to state 54
+
+    $default  reduce using rule 9 (insert_vals)
 
 
 State 114
 
-   11 insert_vals: expr .
-   70 expr: expr . ANDOP expr
-   71     | expr . OR expr
-   72     | expr . COMPARISON expr
-   73     | expr . BETWEEN expr AND expr
+   33 column_list: column_list ',' NAME .
 
-    OR          shift, and go to state 61
-    ANDOP       shift, and go to state 62
-    BETWEEN     shift, and go to state 63
-    COMPARISON  shift, and go to state 64
-
-    $default  reduce using rule 11 (insert_vals)
+    $default  reduce using rule 33 (column_list)
 
 
 State 115
 
-   10 insert_vals_list: insert_vals_list ',' . '(' insert_vals ')'
+   28 opt_length: '(' INTNUM . ')'
 
-    '('  shift, and go to state 129
+    ')'  shift, and go to state 120
 
 
 State 116
 
-   70 expr: expr . ANDOP expr
-   71     | expr . OR expr
-   72     | expr . COMPARISON expr
-   73     | expr . BETWEEN expr AND expr
-   73     | expr BETWEEN expr AND expr .
+   31 data_type: VARCHAR '(' INTNUM . ')'
 
-    COMPARISON  shift, and go to state 64
-
-    $default  reduce using rule 73 (expr)
+    ')'  shift, and go to state 121
 
 
 State 117
 
-   16 update_asgn_list: update_asgn_list ',' NAME COMPARISON . expr
+   24 column_atts: column_atts NOT . NULLX
 
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
-
-    expr  go to state 130
+    NULLX  shift, and go to state 122
 
 
 State 118
 
-   20 create_index_stmt: CREATE KEY NAME ON NAME '(' index_expr_list ')' .
+   25 column_atts: column_atts PRIMARY . KEY
 
-    $default  reduce using rule 20 (create_index_stmt)
+    KEY  shift, and go to state 123
 
 
 State 119
 
-   22 index_expr_list: index_expr_list ',' . expr
+   26 column_atts: column_atts UNIQUE .
 
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
-
-    expr  go to state 131
+    $default  reduce using rule 26 (column_atts)
 
 
 State 120
 
-   29 create_definition: KEY '(' column_list ')' .
+   28 opt_length: '(' INTNUM ')' .
 
-    $default  reduce using rule 29 (create_definition)
+    $default  reduce using rule 28 (opt_length)
 
 
 State 121
 
-   28 create_definition: PRIMARY KEY '(' column_list . ')'
-   44 column_list: column_list . ',' NAME
+   31 data_type: VARCHAR '(' INTNUM ')' .
 
-    ')'  shift, and go to state 132
-    ','  shift, and go to state 95
+    $default  reduce using rule 31 (data_type)
 
 
 State 122
 
-   38 opt_length: '(' . INTNUM ')'
-   39           | '(' . INTNUM ',' INTNUM ')'
+   24 column_atts: column_atts NOT NULLX .
 
-    INTNUM  shift, and go to state 133
+    $default  reduce using rule 24 (column_atts)
 
 
 State 123
 
-   41 data_type: FLOAT opt_length .
+   25 column_atts: column_atts PRIMARY KEY .
 
-    $default  reduce using rule 41 (data_type)
-
-
-State 124
-
-   40 data_type: INTEGER opt_length .
-
-    $default  reduce using rule 40 (data_type)
-
-
-State 125
-
-   42 data_type: VARCHAR '(' . INTNUM ')'
-
-    INTNUM  shift, and go to state 134
-
-
-State 126
-
-   27 create_definition: $@1 NAME data_type column_atts .
-   31 column_atts: column_atts . NOT NULLX
-   32            | column_atts . NULLX
-   33            | column_atts . STRING
-   34            | column_atts . INTNUM
-   35            | column_atts . FLOAT
-   36            | column_atts . PRIMARY KEY
-
-    STRING   shift, and go to state 135
-    INTNUM   shift, and go to state 136
-    FLOAT    shift, and go to state 137
-    NULLX    shift, and go to state 138
-    NOT      shift, and go to state 139
-    PRIMARY  shift, and go to state 140
-
-    $default  reduce using rule 27 (create_definition)
-
-
-State 127
-
-    9 insert_vals_list: '(' insert_vals ')' .
-
-    $default  reduce using rule 9 (insert_vals_list)
-
-
-State 128
-
-   12 insert_vals: insert_vals ',' . expr
-
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
-
-    expr  go to state 141
-
-
-State 129
-
-   10 insert_vals_list: insert_vals_list ',' '(' . insert_vals ')'
-
-    NAME    shift, and go to state 41
-    STRING  shift, and go to state 42
-    INTNUM  shift, and go to state 43
-    FLOAT   shift, and go to state 44
-
-    insert_vals  go to state 142
-    expr         go to state 114
-
-
-State 130
-
-   16 update_asgn_list: update_asgn_list ',' NAME COMPARISON expr .
-   70 expr: expr . ANDOP expr
-   71     | expr . OR expr
-   72     | expr . COMPARISON expr
-   73     | expr . BETWEEN expr AND expr
-
-    OR          shift, and go to state 61
-    ANDOP       shift, and go to state 62
-    BETWEEN     shift, and go to state 63
-    COMPARISON  shift, and go to state 64
-
-    $default  reduce using rule 16 (update_asgn_list)
-
-
-State 131
-
-   22 index_expr_list: index_expr_list ',' expr .
-   70 expr: expr . ANDOP expr
-   71     | expr . OR expr
-   72     | expr . COMPARISON expr
-   73     | expr . BETWEEN expr AND expr
-
-    OR          shift, and go to state 61
-    ANDOP       shift, and go to state 62
-    BETWEEN     shift, and go to state 63
-    COMPARISON  shift, and go to state 64
-
-    $default  reduce using rule 22 (index_expr_list)
-
-
-State 132
-
-   28 create_definition: PRIMARY KEY '(' column_list ')' .
-
-    $default  reduce using rule 28 (create_definition)
-
-
-State 133
-
-   38 opt_length: '(' INTNUM . ')'
-   39           | '(' INTNUM . ',' INTNUM ')'
-
-    ')'  shift, and go to state 143
-    ','  shift, and go to state 144
-
-
-State 134
-
-   42 data_type: VARCHAR '(' INTNUM . ')'
-
-    ')'  shift, and go to state 145
-
-
-State 135
-
-   33 column_atts: column_atts STRING .
-
-    $default  reduce using rule 33 (column_atts)
-
-
-State 136
-
-   34 column_atts: column_atts INTNUM .
-
-    $default  reduce using rule 34 (column_atts)
-
-
-State 137
-
-   35 column_atts: column_atts FLOAT .
-
-    $default  reduce using rule 35 (column_atts)
-
-
-State 138
-
-   32 column_atts: column_atts NULLX .
-
-    $default  reduce using rule 32 (column_atts)
-
-
-State 139
-
-   31 column_atts: column_atts NOT . NULLX
-
-    NULLX  shift, and go to state 146
-
-
-State 140
-
-   36 column_atts: column_atts PRIMARY . KEY
-
-    KEY  shift, and go to state 147
-
-
-State 141
-
-   12 insert_vals: insert_vals ',' expr .
-   70 expr: expr . ANDOP expr
-   71     | expr . OR expr
-   72     | expr . COMPARISON expr
-   73     | expr . BETWEEN expr AND expr
-
-    OR          shift, and go to state 61
-    ANDOP       shift, and go to state 62
-    BETWEEN     shift, and go to state 63
-    COMPARISON  shift, and go to state 64
-
-    $default  reduce using rule 12 (insert_vals)
-
-
-State 142
-
-   10 insert_vals_list: insert_vals_list ',' '(' insert_vals . ')'
-   12 insert_vals: insert_vals . ',' expr
-
-    ')'  shift, and go to state 148
-    ','  shift, and go to state 128
-
-
-State 143
-
-   38 opt_length: '(' INTNUM ')' .
-
-    $default  reduce using rule 38 (opt_length)
-
-
-State 144
-
-   39 opt_length: '(' INTNUM ',' . INTNUM ')'
-
-    INTNUM  shift, and go to state 149
-
-
-State 145
-
-   42 data_type: VARCHAR '(' INTNUM ')' .
-
-    $default  reduce using rule 42 (data_type)
-
-
-State 146
-
-   31 column_atts: column_atts NOT NULLX .
-
-    $default  reduce using rule 31 (column_atts)
-
-
-State 147
-
-   36 column_atts: column_atts PRIMARY KEY .
-
-    $default  reduce using rule 36 (column_atts)
-
-
-State 148
-
-   10 insert_vals_list: insert_vals_list ',' '(' insert_vals ')' .
-
-    $default  reduce using rule 10 (insert_vals_list)
-
-
-State 149
-
-   39 opt_length: '(' INTNUM ',' INTNUM . ')'
-
-    ')'  shift, and go to state 150
-
-
-State 150
-
-   39 opt_length: '(' INTNUM ',' INTNUM ')' .
-
-    $default  reduce using rule 39 (opt_length)
+    $default  reduce using rule 25 (column_atts)
