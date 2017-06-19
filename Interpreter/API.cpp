@@ -7,6 +7,7 @@
 //
 
 #include "API.hpp"
+#include <algorithm>
 
 void API::set_sql(string sql)
 {
