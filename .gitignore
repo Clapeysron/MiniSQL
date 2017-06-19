@@ -290,4 +290,8 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 
+
+*.vcxproj
+*.vcxproj.filters
+
 # End of https://www.gitignore.io/api/visualstudio
