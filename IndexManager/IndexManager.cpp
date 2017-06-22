@@ -31,7 +31,7 @@ IndexManager::IndexManager(std::string fileName) :_fileName(fileName) {
 			_floatIndex.emplace(index_temp.getName(), index_temp);
 		}
 		case Chars: {
-			Index<float>&& index_temp = Index<float>::deserialize(cis);
+			Index<std::string>&& index_temp = Index<std::string>::deserialize(cis);
 			_stringIndex.emplace(index_temp.getName(), index_temp);
 		}
 		default:

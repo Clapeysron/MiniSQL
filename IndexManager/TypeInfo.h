@@ -11,10 +11,26 @@ enum Type {
 class TypeInfo {
 public:
 	TypeInfo(Type type, size_t size):_type(Chars), _size(size) {
+		//TODO: consider replace size with int
 
 	}
 	TypeInfo(Type type): _type(type), _size(4) {
 
+	}
+
+	TypeInfo(int type, int size) :_size(size) {
+		switch (type) {
+		case 82:
+			_type = Chars;
+		case 83:
+			_type = Int;
+		case 84:
+			_type = Float;
+		default:
+			_type = Int;
+			std::cerr << "TypeInfo constructor: no such type" << std::endl;
+			break;
+		}
 	}
 	~TypeInfo() = default;
 	std::string name() {
@@ -63,6 +79,14 @@ public:
 			break;
 		}
 		return -1;
+	}
+
+	Type get_type() {
+		return _type;
+	}
+
+	size_t get_size() {
+		return _size;
 	}
 
 private:

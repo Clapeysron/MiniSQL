@@ -420,7 +420,7 @@ string API::select(string table_name, vector<string> col_list, vector<int> index
 
 vector<int> API::search_between(string table_name, int type_1, string comp, int type_2, string between_1, int type_3, string between_2)
 {
- //   // TODO: API search_between
+    // TODO: API search_between
     vector<int> ret_indexs;
 	//if (!CM.have_table(table_name)) {
 	//	std::cerr << "no such table" << std::endl;
@@ -439,7 +439,7 @@ vector<int> API::search_between(string table_name, int type_1, string comp, int 
 	//			ss << between_1 << between_2;
 
 	//			std::string temp_index = temp_table.find_index(comp);
-	//			if (type_2 == temp_field.get_type() && type_3 == temp_field.get_type()) {
+	//			if (type_2 == temp_field.get_type_magic_num() && type_3 == temp_field.get_type_magic_num()) {
 	//				if (temp_table.have_index(comp)) {
 	//					std::string temp_index = temp_table.find_index(comp);
 	//					switch (type_2) {
@@ -510,7 +510,7 @@ vector<int> API::search_where(string table_name, int comparison_type, int type_1
 	//			return ret_indexs;
 	//		} else {
 	//			FieldInfo temp_field = IM.find_field(comp_1);
-	//			if (type_2 == temp_field.get_type()) {
+	//			if (type_2 == temp_field.get_type_magic_num()) {
 	//				if (temp_table.have_index(comp_1)) {
 
 	//					std::stringstream ss;
@@ -671,6 +671,8 @@ string API::drop_index(string table_name, string index_name)
     // bool CM.have_index(table_name, index_name);
     // bool IM.drop_index(index_name);
     // string > out_string
+
+	// notice that IM should be called first, delete indices then delete table catalog
     string ret_string;
     ret_string+="Query OK, 0 rows affected (0.01 sec)\n";
     return ret_string;

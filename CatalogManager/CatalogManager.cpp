@@ -1,19 +1,20 @@
 #include "CatalogManager.h"
 #include "CharStream.h"
+#include <iostream>
 
-FieldInfo::FieldInfo(TypeInfo type, bool is_unique, std::string name) :
-	_type(type),
-	_is_unique(is_unique),
-	_name(name) {
-}
+
+
+	
 
 FieldInfo FieldInfo::deserialize(CharInStream& cis) {
 	bool is_unique;
+	bool is_not_null;
 	std::string name;
 	cis >> is_unique;
+	cis >> is_not_null;
 	cis >> name;
 
-	return FieldInfo(TypeInfo::deserialize(cis), is_unique, name);
+	return FieldInfo(TypeInfo::deserialize(cis), is_unique, name, is_not_null);
 }
 
 void FieldInfo::serialize(CharOutStream & couts) const {
@@ -23,32 +24,25 @@ void FieldInfo::serialize(CharOutStream & couts) const {
 
 }
 
-TableInfo::TableInfo(std::vector<FieldInfo> fields, size_t index_pos, std::string name, size_t primary) :
-	_fields(fields),
-	_index_pos(index_pos),
-	_name(name),
-	_primary(primary) {
-}
+
 
 TableInfo TableInfo::deserialize(CharInStream& cis) {
 	std::string name;
-	size_t index_pos;
+	
 	size_t primary;
 	size_t field_num;
 	std::vector<FieldInfo> fields;
 	cis >> name;
-	cis >> index_pos;
 	cis >> field_num;
 	cis >> primary;
 	for (size_t i = 0; i < field_num; i++) {
 		fields.push_back(FieldInfo::deserialize(cis));
 	}
-	return TableInfo(fields, index_pos, name, primary);
+	return TableInfo(fields,  name, primary);
 }
 
 void TableInfo::serialize(CharOutStream& couts)const {
 	couts << _name;
-	couts << _index_pos;
 	couts << _fields.size();
 	couts << _primary;
 	for (size_t i = 0; i < _fields.size(); i++) {
@@ -57,7 +51,9 @@ void TableInfo::serialize(CharOutStream& couts)const {
 
 }
 
-CatalogManager::CatalogManager(std::string fileName) {
+CatalogManager::CatalogManager(std::string fileName) :
+	_fileName(fileName)
+{
 	std::vector<char*> allBlocks;
 	BM.readDatas(fileName, allBlocks);
 	for (size_t i = 0; i < allBlocks.size(); i++) {
@@ -70,16 +66,7 @@ CatalogManager::CatalogManager(std::string fileName) {
 	}
 }
 
-CatalogManager::~CatalogManager() {
-	/*int block_num = 0;
-	for (auto i = _tables.cbegin(); i != _tables.cend(); i++) {
-		char* buff = new char[BlockSize];
-		CharOutStream couts(buff, BlockSize);
-		i->second.serialize(couts);
-		BufferManager.writeDataToFile(_);
-		delete [] buff;
-	}*/
-}
+
 
 
 
@@ -94,37 +81,4 @@ void CatalogManager::writeBack(BufferManager& bufferManager) {
 		block_index++;
 	}
 }
-
-void CatalogManager::add_table(TableInfo& table) {
-	if (0 == _tables.emplace(table.getName(), table).second) {
-		//throw SomeError("Error: duplicate table name '" + table.getName() + "'");
-		std::cerr << "Error: duplicate table name '" + table.getName() + "'";
-	}
-	//_tables.emplace(table.getName(), table);
-}
-
-void CatalogManager::remove_table(std::string& tableName) {
-	if (0 == _tables.erase(tableName)){
-		//throw SomeError("Error: no such table '" + tableName + "'");
-		std::cerr << "Error: no such table '" + tableName + "'";
-	}
-}
-
-TableInfo& CatalogManager::find_table(std::string& tableName) {
-	auto i = _tables.find(tableName);
-	if (i != _tables.end()) {
-		return i->second;
-	} else {
-		//throw SomeError("Error: no such table '" + tableName + "'");
-		std::cerr << "Error: no such table '" + tableName + "'";
-	}
-}
-
-bool CatalogManager::have_table(std::string& tableName) {
-	return _tables.find(tableName) != _tables.end();
-}
-
-
-
-
 
