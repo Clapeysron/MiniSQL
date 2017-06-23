@@ -4,13 +4,13 @@
 #include <memory>
 #include <map>
 #include <utility>
-//#include "BPlusTree.h"
-#include "lajiBPT.h"
+#include "BPlusTree.h"
 #include "../BufferManager/BufferManager.h"
 #include "../CatalogManager/CatalogManager.h"
 #include <sstream>
 #include <algorithm>
 
+const size_t name_length_max = 20;
 
 template <typename T>
 class Index {
@@ -35,7 +35,7 @@ public:
 		return Index(indexName, fieldName, tableName, BPlusTree<T>::deserialize(cis));
 	}
 
-	void serialize(CharOutStream& couts) const {
+	void serialize(CharOutStream& couts) const{
 		couts << _type << _indexName << _tableName << _fieldName;
 		_tree.serialize(couts);
 	}
@@ -49,6 +49,11 @@ public:
 	}
 
 
+	void insert(const std::vector<T>& keys, const std::vector<record_ptr>& records) {
+		for (size_t i = 0; i < keys.size(); i++) {
+			_tree.insert_entity(keys[i], records[i]);
+		}
+	}
 
 	BPlusTree<T> get_tree() {
 		return _tree;
@@ -63,21 +68,14 @@ public:
 	}
 	// for delete all;
 
-
-	void remove_records(const std::vector<record_ptr>& indices) {
-		_tree.remove_records(indices);
-	}
-
-
-
 private:
-	std::string _indexName;
-	std::string _fieldName;
-	std::string _tableName;
-	BPlusTree<T> _tree;
-	Type _type;
-	
-	
+	std::string _indexName;			// size = 20
+	std::string _fieldName;			//size = 20
+	std::string _tableName;			//size = 20
+	BPlusTree<T> _tree;            //size = 20
+	Type _type;						//size = 4;
+
+	static const size_t IndexSize = 3 * name_length_max + 2 + sizeof(Type);
 };
 
 
@@ -90,49 +88,159 @@ class IndexManager {
 
 	using record_ptr = int;
 public:
-	IndexManager(std::string fileName);
+	IndexManager(std::string fileName) {
+		size_t indexSize = 3 * name_length_max + 20 + sizeof(Type);
+
+		std::vector<char*> allBlocks;
+		BM.readDatas(_fileName, allBlocks);
+		size_t int_index_num;
+		size_t float_index_num;
+		size_t string_index_num;
+		size_t block_count = 0;
+		size_t block_size = BM.getBlockSize();
+		CharInStream cis(allBlocks[block_count], block_size);
+		cis >> int_index_num >> float_index_num >> string_index_num;
+
+		for (size_t i = 0; i < int_index_num; i++) {
+			if (cis.remain() > indexSize) {
+				Index<int> temp = Index<int>::deserialize(cis);
+				_intIndex.emplace(temp.getName(), temp);
+			} else {
+				block_count++;
+				cis = CharInStream(allBlocks[block_count], block_size);
+				Index<int> temp = Index<int>::deserialize(cis);
+				_intIndex.emplace(temp.getName(), temp);
+			}
+		}
+
+		for (size_t i = 0; i < float_index_num; i++) {
+			if (cis.remain() > indexSize) {
+				Index<float> temp = Index<float>::deserialize(cis);
+				_floatIndex.emplace(temp.getName(), temp);
+			} else {
+				block_count++;
+				cis = CharInStream(allBlocks[block_count], block_size);
+				Index<float> temp = Index<float>::deserialize(cis);
+				_floatIndex.emplace(temp.getName(), temp);
+			}
+		}
+
+		for (size_t i = 0; i < string_index_num; i++) {
+			if (cis.remain() > indexSize) {
+				Index<std::string> temp = Index<std::string>::deserialize(cis);
+				_stringIndex.emplace(temp.getName(), temp);
+			} else {
+				block_count++;
+				cis = CharInStream(allBlocks[block_count], block_size);
+				Index<std::string> temp = Index<std::string>::deserialize(cis);
+				_stringIndex.emplace(temp.getName(), temp);
+			}
+		}
+
+		block_count++;
+		size_t real_records_num;
+		cis >> real_records_num;
+
+		for (size_t i = 0; i < real_records_num; i++) {
+			size_t record_amount;
+			std::string table_name;
+			cis >> table_name >> record_amount;
+			std::vector<record_ptr> real_records;
+			for (size_t i = 0; i < record_amount; i++) {
+				if (cis.remain() > sizeof(record_ptr)) {
+					record_ptr temp;
+					cis >> temp;
+					real_records.push_back(temp);
+				} else {
+					block_count++;
+					cis = CharInStream(allBlocks[block_count], block_size);
+					record_ptr temp;
+					cis >> temp;
+					real_records.push_back(temp);
+				}
+
+			}
+			_real_record_ptrs.emplace(table_name, real_records);
+			block_count++;
+			cis = CharInStream(allBlocks[block_count], block_size);
+		}
+
+		for (size_t i = 0; i < allBlocks.size(); i++) {
+			delete[] allBlocks[i];
+		}
+	}
+
+
 	~IndexManager() {
-		//TODO: implement ~IndexManager
-		//size_t block_index = 0;
-		//size_t block_size = BM.getBlockSize();
-		//for (auto i = _intIndex.cbegin(); i != _intIndex.cend(); i++) {
-		//	//size_t blockNum = i->second.getblockNum();
-		//	char* buff = new char[block_size];
-		//	CharOutStream couts(buff, block_size);
-		//	i->second.serialize(couts);
-		//	if (cout.remain) {
+		size_t indexSize = 3 * name_length_max + 20 + sizeof(Type);
 
-		//	}
-		//	for (size_t j = block_index; j < block_index + blockNum; j++) {
-		//		BM.writeDataToFile(_fileName, j, buff + (j - block_index)*BLOCKSIZE);
-		//	}
-		//	delete[] buff;
-		//	block_index += blockNum;
-		//}
+		size_t block_index = 0;
+		size_t block_size = BM.getBlockSize();
 
-		//for (auto i = _intIndex.cbegin(); i != _intIndex.cend(); i++) {
-		//	size_t blockNum = i->second.getblockNum();
-		//	char* buff = new char[blockNum*bufferManager.getBlockSize()];
-		//	CharOutStream couts(buff, bufferManager.getBlockSize());
-		//	i->second.serialize(couts);
-		//	for (size_t j = block_index; j < block_index + blockNum; j++) {
-		//		bufferManager.writeDataToFile(_fileName, j, buff + (j - block_index)*BLOCKSIZE);
-		//	}
-		//	delete[] buff;
-		//	block_index += blockNum;
-		//}
+		size_t index_num_per_block = block_size / indexSize;
+		char* buff = new char[block_size];
+		CharOutStream couts(buff, block_size);
+		couts << _intIndex.size() << _floatIndex.size() << _stringIndex.size();
+		for (auto i = _intIndex.cbegin(); i != _intIndex.cend(); i++) {
+			if (couts.remain() > indexSize) {
+				i->second.serialize(couts);
+			} else {
+				BM.writeDataToFile(_fileName, block_index, buff);
 
-		//for (auto i = _intIndex.cbegin(); i != _intIndex.cend(); i++) {
-		//	size_t blockNum = i->second.getblockNum();
-		//	char* buff = new char[blockNum*bufferManager.getBlockSize()];
-		//	CharOutStream couts(buff, bufferManager.getBlockSize());
-		//	i->second.serialize(couts);
-		//	for (size_t j = block_index; j < block_index + blockNum; j++) {
-		//		bufferManager.writeDataToFile(_fileName, j, buff + (j - block_index)*BLOCKSIZE);
-		//	}
-		//	delete[] buff;
-		//	block_index += blockNum;
-		//}
+				block_index++;
+				couts.reset();
+				i->second.serialize(couts);
+			}
+		}
+
+
+
+		for (auto i = _floatIndex.cbegin(); i != _floatIndex.cend(); i++) {
+			if (couts.remain() > indexSize) {
+				i->second.serialize(couts);
+			} else {
+				BM.writeDataToFile(_fileName, block_index, buff);
+
+				block_index++;
+				couts.reset();
+				i->second.serialize(couts);
+			}
+		}
+
+		for (auto i = _stringIndex.cbegin(); i != _stringIndex.cend(); i++) {
+			if (couts.remain() > indexSize) {
+				i->second.serialize(couts);
+			} else {
+				BM.writeDataToFile(_fileName, block_index, buff);
+
+				block_index++;
+				couts.reset();
+				i->second.serialize(couts);
+			}
+		}
+
+		BM.writeDataToFile(_fileName, block_index, buff);
+		couts.reset();
+		block_index++;
+		couts << _real_record_ptrs.size();
+		for (auto i = _real_record_ptrs.cbegin(); i != _real_record_ptrs.cend(); i++) {
+			couts << i->first << i->second.size();
+			for (auto j = i->second.cbegin(); j != i->second.cend(); j++) {
+				if (couts.remain() > sizeof(*j)) {
+					couts << *j;
+				} else {
+					BM.writeDataToFile(_fileName, block_index, buff);
+					couts.reset();
+					block_index++;
+					couts << *j;
+				}
+			}
+			couts.reset();
+			block_index++;
+		}
+
+		BM.writeDataToFile(_fileName, block_index, buff);
+		delete[] buff;
 	}
 
 	template<typename T>
@@ -176,11 +284,7 @@ public:
 			break;
 		}
 	}
-	//create_index(string table_name, string index_name, vector<string> col_list)
 
-
-
-	//Index& create_index(std::string& indexName, std::string& tableName, std::string& fieldName, TypeInfo& Type);
 	void drop_index(const Type& type, const std::string& index_name) {
 		switch (type) {
 		case Int:
@@ -241,8 +345,54 @@ public:
 
 
 
-	int insert(string table_name, std::vector<int> type_list, std::vector<string> value_list) {
+
+
+	int insert(const string& table_name, const string& fieldName, const std::vector<int>keys, const std::vector<record_ptr>& record_list) {
 		//TODO: I just want keys and ptr_type. I think this should be down after record manager
+		//TODO: I want to comfirm that _real_record_ptrs[i] = i or -1, only these two possible value, and record_list should be size()+1,+2,+3...
+
+		_real_record_ptrs.at(table_name).insert(_real_record_ptrs.at(table_name).end(), record_list.begin(), record_list.end());
+		std::pair<Type, std::string> indexName_type = CM.find_index(table_name, fieldName);
+		if (indexName_type.first == Int) {
+			_intIndex.at(indexName_type.second).insert(keys, record_list);
+			return keys.size();
+		} else {
+			std::cerr << "IndexManager: insert: type doesn't match";
+			return 0;
+		}
+
+	}
+
+	int insert(const string& table_name, const string& fieldName, const std::vector<float>keys, const std::vector<record_ptr>& record_list) {
+		//TODO: I just want keys and ptr_type. I think this should be down after record manager
+		//TODO: I want to comfirm that _real_record_ptrs[i] = i or -1, only these two possible value, and record_list should be size()+1,+2,+3...
+
+		_real_record_ptrs.at(table_name).insert(_real_record_ptrs.at(table_name).end(), record_list.begin(), record_list.end());
+		std::pair<Type, std::string> indexName_type = CM.find_index(table_name, fieldName);
+		if (indexName_type.first == Float) {
+			_floatIndex.at(indexName_type.second).insert(keys, record_list);
+			return keys.size();
+		} else {
+			std::cerr << "IndexManager: insert: type doesn't match";
+			return 0;
+		}
+
+	}
+
+	int insert(const string& table_name, const string& fieldName, const std::vector<std::string>keys, const std::vector<record_ptr>& record_list) {
+		//TODO: I just want keys and ptr_type. I think this should be down after record manager
+		//TODO: I want to comfirm that _real_record_ptrs[i] = i or -1, only these two possible value, and record_list should be size()+1,+2,+3...
+
+		_real_record_ptrs.at(table_name).insert(_real_record_ptrs.at(table_name).end(), record_list.begin(), record_list.end());
+		std::pair<Type, std::string> indexName_type = CM.find_index(table_name, fieldName);
+		if (indexName_type.first == Chars) {
+			_stringIndex.at(indexName_type.second).insert(keys, record_list);
+			return keys.size();
+		} else {
+			std::cerr << "IndexManager: insert: type doesn't match";
+			return 0;
+		}
+
 	}
 
 
@@ -344,6 +494,7 @@ private:
 	const std::string _fileName;
 	static BufferManager& BM;
 	static CatalogManager& CM;
+	static const std::string bplustree_filename;
 
 
 	std::vector<record_ptr> convert_to_real_ptrs(const std::string& table_name, std::vector<record_ptr>& fake_ptrs) {
@@ -358,5 +509,8 @@ private:
 	std::vector<record_ptr> get_real_ptrs(const std::string& table_name) {
 		return _real_record_ptrs[table_name];
 	}
+
+
+
 };
 

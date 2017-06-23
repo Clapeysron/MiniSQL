@@ -11,6 +11,7 @@ public:
     CharInStream(char*begin, size_t num){
         this->setg(begin, begin, begin+num);
     }
+
     template<typename T>
     CharInStream& operator>>(T& target){
         assert(this->in_avail()>=sizeof(T));
@@ -34,6 +35,10 @@ public:
     char* getbegin(){
         return this->eback();
     }
+
+	size_t remain() {
+		return this->egptr() - this->gptr();
+	}
 
 	void resize(size_t num) {
 		assert(int(num) >= this->gptr() - this->eback());
@@ -77,6 +82,10 @@ public:
     size_t remain(){
         return this->epptr()-this->pptr();
     }
+
+	void reset() {
+		this->setg(this->pbase(), this->pbase(), this->epptr());
+	}
 
 };
 

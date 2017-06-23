@@ -10,106 +10,77 @@
 #include <iostream>
 #include <algorithm>
 
-//typedef int Record;
-
 
 class FieldInfo {
 public:
-	FieldInfo(TypeInfo type, bool is_unique, std::string name, bool not_null) :
-		_type(type),
-		_is_unique(is_unique),
-		_name(name),
-		_not_null(not_null) {
-	}
+	FieldInfo(TypeInfo type, bool is_unique, std::string name, bool not_null, std::string indexName);
 
 	~FieldInfo() = default;
+
 	static FieldInfo deserialize(CharInStream& cis);
-	//TODO: check the deserialize.serialize for not null attribute
+
 	void serialize(CharOutStream& couts)const;
-	const std::string get_name() {
+
+	std::string get_name() {
 		return _name;
 	}
-	int get_type_magic_num() {
-		return _type.get_type_magic();
+
+	int get_type_magic_num();
+
+	TypeInfo& get_type() {
+		return _type;
 	}
 
-	const TypeInfo& get_type() {
-		return _type;
+	std::string get_index() {
+		return _indexName;
 	}
 
 private:
 	TypeInfo _type;
 	bool _is_unique;
-	std::string _name;
+	std::string _name;      // at most 56
 	bool _not_null;
-	bool _primary;
+	/*bool _primary;*/
+	std::string _indexName; // at most 56
 };
 
 class TableInfo {
 
 public:
 
-	TableInfo(const std::vector<FieldInfo>& fields, const std::string& name, const size_t& primary) :
-		_fields(fields),
-		_name(name),
-		_primary(primary) {
+	TableInfo(const std::vector<FieldInfo>& fields, const std::string& name, const size_t& primary);
 
-	}
 	~TableInfo() = default;
+
 	static TableInfo deserialize(CharInStream& cis);
+
 	void serialize(CharOutStream& couts)const;
+
 	std::string getName() {
 		return _name;
 	}
 
-	TableInfo(std::string table_name, std::vector<std::string> name_list, std::vector<int> type_list, std::vector<int> length_list, std::vector<int> primary_flag, std::vector<int> unique_flag, std::vector<int> nnull_flag);
+	bool have_column(const std::string& fieldName);
 
-
-	bool have_column(const std::string& fieldName) {
-		for (auto i = _fields.begin(); i != _fields.end(); i++) {
-			if ((*i).get_name() == fieldName) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	bool have_columns(const std::vector<std::string>&  fieldNames) {
-		for (auto i = fieldNames.cbegin(); i != fieldNames.cend(); i++) {
-			if (!have_column(*i)) {
-				return false;
-			}
-		}
-		return true;
-	}
+	bool have_columns(const std::vector<std::string>&  fieldNames);
 
 	bool have_index(std::string fieldName);
 
-	std::string find_index(std::string fieldName);
+	std::pair<Type, std::string> find_index(const std::string& fieldName);
 
-	TypeInfo get_type(std::string fieldName) {
-		for (size_t i = 0; i < _fields.size(); i++) {
-			if (_fields[i].get_name() == fieldName) {
-				return _fields[i].get_type();
-			}
-		}
+	TypeInfo get_type(std::string fieldName);
 
-		std::cerr << "CatalogManager: have no such fieldName" << std::endl;
-		return TypeInfo(0, 0);
-		// TODO: throw an error
-	}
+	const std::vector<std::pair<Type, std::string>>& get_indices();
 
-	const std::vector<std::pair<Type, std::string>>& get_indices() {
-		return indices;
-	}
+	const std::pair<Type, std::string>& get_primary_index();
+
+
 
 private:
 	std::vector<FieldInfo> _fields;
-	std::string _name;
+	std::string _name;   //at most 56
 	size_t _primary;  //which field in fields is primary key
 
-	//size_t _block_num; // how many block the tableinfo uses.
-	std::vector<std::pair<Type, std::string>> indices;
 
 
 };
@@ -118,12 +89,8 @@ class CatalogManager {
 public:
 	CatalogManager(std::string fileName);
 	~CatalogManager();
-	void add_table(TableInfo& table) {
-		if (0 == _tables.emplace(table.getName(), table).second) {
-			//throw SomeError("Error: duplicate table name '" + table.getName() + "'");
-			std::cerr << "Error: duplicate table name '" + table.getName() + "'" << std::endl;
-		}
-	}
+
+	void add_table(TableInfo& table);
 
 	void create_table(const std::string& table_name,
 		const std::vector<string>& name_list,
@@ -131,40 +98,11 @@ public:
 		const std::vector<int>& length_list,
 		const std::vector<int>& primary_flag,
 		const std::vector<int>& unique_flag,
-		const std::vector<int>& nnull_flag) {
-		//parameter are yi tuo dongxi the same with tableinfo constructor
-		// maybe have some thing to do with index manager and recordmanager
-		std::vector<FieldInfo> fields;
-		for (size_t i = 0; i < name_list.size(); i++) {
-			fields.emplace_back(TypeInfo(type_list[i], length_list[i]), unique_flag[i], name_list[i], nnull_flag[i]);
-		}
-		//TODO:consider get primary flag as a size_t or int
-		size_t primary_pos;
-		int flag = 0;
-		for (size_t i = 0; i < primary_flag.size(); i++) {
-			if (primary_flag[i] == 1) {
-				primary_pos = i;
-				flag = 1;
-				break;
-			}
-		}
-		if (flag == 0) {
-			primary_pos = primary_flag.size();
-		}
+		const std::vector<int>& nnull_flag);
 
-		_tables.emplace(table_name, TableInfo(fields, table_name, primary_pos));
+	void drop_table(std::string& tableName);
 
-	}
-
-	void drop_table(std::string& tableName) {
-		
-		if (0 == _tables.erase(tableName)) {
-			//throw SomeError("Error: no such table '" + tableName + "'");
-			std::cerr << "Error: no such table '" + tableName + "'" << std::endl;
-		}
-	}
-
-	TableInfo& find_table(std::string& tableName) {
+	TableInfo& find_table(const std::string& tableName) {
 		auto i = _tables.find(tableName);
 		if (i != _tables.end()) {
 			return i->second;
@@ -174,20 +112,25 @@ public:
 		}
 	}
 
-	void writeBack(BufferManager& bufferManager);
 
 	std::pair<Type, std::string> find_primary_index(std::string tableName);
 
-	std::vector<std::pair<Type, std::string>> find_indices(std::string tableName);
+	std::vector<std::pair<Type, std::string>> find_indices(std::string tableName) {
+		return find_table(tableName).get_indices();
+	}
+
+	std::pair<Type, std::string> find_index(const std::string& tableName, const std::string& fieldName) {
+		return find_table(tableName).find_index(fieldName);
+	}
 
 	bool have_table(const std::string& name) {
 		return _tables.count(name) == 1;
 	}
-	bool have_column(std::string tableName,std::vector<std::string> columns) {
+	bool have_column(std::string tableName, std::vector<std::string> columns) {
 		return find_table(tableName).have_columns(columns);
 	}
 
-	bool have_column(std::string tableName,std::string column) {
+	bool have_column(std::string tableName, std::string column) {
 		return find_table(tableName).have_column(column);
 	}
 
@@ -199,25 +142,18 @@ public:
 		return _tables.at(tableName).get_indices();
 	}
 
-	std::vector<std::string> show_tables() {
-		std::vector<std::string> result;
-		
-		for_each(_tables.begin(), _tables.end(), [&result](const std::pair<std::string, TableInfo>& i) {
-			result.push_back(i.first);
-		});
-		return result;
-	}
+	std::vector<std::string> show_tables();
 
 
 
 private:
 	std::map<std::string, TableInfo> _tables;
 	std::string _fileName;
-	BufferManager& BM;
-	int locate_table(std::string& tableName);
-
-	//TODO: serialize and deserialize should add _table_and_index and other function
+	
+	static BufferManager BM;
 
 };
+
+
 
 
