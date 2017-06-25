@@ -87,4 +87,16 @@ void Interpreter::exe_loop(istream& input)
             }
         }
     }
+    if (sql.size()!=0)
+    {
+        clean_sql_from_bison();
+        yy_switch_to_buffer(yy_scan_string(sql.data()));
+        cout << "[line" << line_num << "] " << sql << endl;
+        if(!yyparse())
+        {
+            cout << sql_api.exec();
+            cout << endl;
+        }
+        sql.clear();
+    }
 }
