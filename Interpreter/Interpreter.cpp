@@ -21,12 +21,7 @@ void Interpreter::main_loop(istream& input)
 
     string sql;
     API sql_api;
-	/*CatalogManager CM = CatalogManager("catalog");
-	IndexManager IM = IndexManager("index");
-	BufferManager BM = BufferManager();
-	
-	sql_api.CM = CM;
-	sql_api.IM = IM;*/
+
 
 
     cout << "Minisql> ";

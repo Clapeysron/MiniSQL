@@ -543,16 +543,29 @@ string API::update_part(string table_name, string col_name, int update_type, str
 }
 
 string API::create(string table_name, vector<string> name_list, vector<int> type_list, vector<int> length_list, vector<int> primary_flag, vector<int> unique_flag, vector<int> nnull_flag) {
+	
+	std::reverse(name_list.begin(), name_list.end());
+	std::reverse(type_list.begin(), type_list.end());
+	std::reverse(length_list.begin(), length_list.end());
+	std::reverse(primary_flag.begin(), primary_flag.end());
+	std::reverse(unique_flag.begin(), unique_flag.end());
+	std::reverse(nnull_flag.begin(), nnull_flag.end());
+	
+	
+	
 	string ret_string;
-
-	// TODO: API create
-	if (!CM.have_table(table_name)) {
-		CM.create_table(table_name, name_list, type_list, length_list, primary_flag, unique_flag, nnull_flag);
-		ret_string += "Query OK, 0 rows affected (0.05 sec)\n";
-
+	if (table_name.size()>20) {
+		ret_string += "ERROR : Table name should be less than 20 \n";
 	} else {
-		ret_string += "ERROR : Table '"+table_name+"' already exists\n";
+		if (!CM.have_table(table_name)) {
+			CM.create_table(table_name, name_list, type_list, length_list, primary_flag, unique_flag, nnull_flag);
+			ret_string += "Query OK, 0 rows affected (0.05 sec)\n";
+
+		} else {
+			ret_string += "ERROR : Table '" + table_name + "' already exists\n";
+		}
 	}
+	
 
 	//string > out_string
 
@@ -629,6 +642,13 @@ string API::show_tables() {
 string API::show_status() {
 	// TODO: API show_tables
 	// vector<string> show_tables();
+	std::vector<std::string> tableNames = CM.show_tables();
+	for (auto i = tableNames.begin(); i != tableNames.end(); i++) {
+		std::cout << *i << std::endl;
+		CM.show_fields(*i);
+		std::cout << std::endl;
+	}
+	//CM.show_fields("test");
 	string ret_string;
 	ret_string += "Status flag in Managers\n";
 	return ret_string;

@@ -12,6 +12,17 @@ public:
         this->setg(begin, begin, begin+num);
     }
 
+	CharInStream& operator>>(std::string& target) {
+		target.clear();
+
+		while (this->sgetc() != '\0') {
+			assert(this->in_avail() >= 0);
+			target.push_back(this->sbumpc());
+		}
+		this->snextc();
+		return *this;
+	}
+
     template<typename T>
     CharInStream& operator>>(T& target){
         assert(this->in_avail()>=sizeof(T));
@@ -21,16 +32,7 @@ public:
         return *this;
     }
 
-    CharInStream& operator>>(std::string& target){
-        target.clear();
-
-        while(this->sgetc()!='\0'){
-            assert(this->in_avail()>=0);
-            target.push_back(this->sbumpc());
-        }
-        this->snextc();
-        return *this;
-    }
+   
 
     char* getbegin(){
         return this->eback();
@@ -59,21 +61,25 @@ public:
         this->setp(begin, begin+num); 
     }
 
+
+	CharOutStream& operator<<(const std::string& target) {
+		//std::cout << "<< string" << std::endl;
+		assert(this->remain() >= target.size());
+		this->sputn(target.c_str(), target.size());
+		this->sputc('\0');
+		return *this;
+	}
+
     template<typename T>
     CharOutStream& operator<<(const T& target){
+		//std::cout << "<< not string" << std::endl;
         assert(this->remain()>=sizeof(target));
         this->sputn(reinterpret_cast<const char*>(&target), sizeof(T));
         return *this;
     }
 
 
-    CharOutStream& operator<<(std::string& target){
-        
-        assert(this->remain()>=target.size());
-        this->sputn(target.c_str(), target.size());
-        this->sputc('\0');
-        return *this;
-    }
+    
 
     char* getbegin(){
         return this->pbase();

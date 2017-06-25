@@ -74,6 +74,11 @@ public:
 
 	const std::pair<Type, std::string>& get_primary_index();
 
+	void show_fields() {
+		for (size_t i = 0; i < _fields.size(); i++) {
+			std::cout << _fields[i].get_name() << " " << _fields[i].get_type().name() << std::endl;
+		}
+	}
 
 
 private:
@@ -140,6 +145,10 @@ public:
 
 	const std::vector<std::pair<Type, std::string>>& get_indices(const std::string& tableName) {
 		return _tables.at(tableName).get_indices();
+	}
+
+	void show_fields(const std::string& tableName) {
+		_tables.at(tableName).show_fields();
 	}
 
 	std::vector<std::string> show_tables();

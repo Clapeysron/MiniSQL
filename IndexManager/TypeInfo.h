@@ -3,31 +3,32 @@
 #include "../CatalogManager/CharStream.h"
 
 enum Type {
-	Int, 
+	Int,
 	Float,
 	Chars
 };
 
 class TypeInfo {
 public:
-	TypeInfo(Type type, size_t size):_type(Chars), _size(size) {
-		//TODO: consider replace size with int
-
+	TypeInfo(Type type, size_t size) :_type(type), _size(size) {
 	}
-	TypeInfo(Type type): _type(type), _size(4) {
+	TypeInfo(Type type) : _type(type), _size(4) {
 
 	}
 
-	TypeInfo(int type, int size) :_size(size) {
+	TypeInfo(int type, int size) {
 		switch (type) {
 		case 82:
 			_type = Chars;
+			_size = size;
 			break;
 		case 83:
 			_type = Int;
+			_size = 4;
 			break;
 		case 84:
 			_type = Float;
+			_size = 4;
 			break;
 		default:
 			_type = Int;
@@ -35,7 +36,9 @@ public:
 			break;
 		}
 	}
+
 	~TypeInfo() = default;
+
 	std::string name() {
 		switch (_type) {
 		case Int:

@@ -23,6 +23,8 @@ TableInfo TableInfo::deserialize(CharInStream& cis) {
 	cis >> name >> field_num >> primary;
 
 	for (size_t i = 0; i < field_num; i++) {
+		//FieldInfo temp = FieldInfo::deserialize(cis);
+		//fields.push_back(temp);
 		fields.push_back(FieldInfo::deserialize(cis));
 	}
 	
@@ -129,7 +131,7 @@ CatalogManager::CatalogManager(std::string fileName) :
 			TableInfo temp_table = TableInfo::deserialize(cis);
 			_tables.emplace(temp_table.getName(), temp_table);
 		}
-		for (size_t i = 0; i < allBlocks.size(); i++) {
+		for (size_t i = 0; i != allBlocks.size(); i++) {
 			delete[] allBlocks[i];
 		}
 	}
@@ -220,7 +222,9 @@ FieldInfo FieldInfo::deserialize(CharInStream & cis) {
 	cis >> is_not_null;
 	cis >> name;
 	cis >> indexName;
-
+	
+	//TypeInfo temp = TypeInfo::deserialize(cis);
+	//return FieldInfo(temp, is_unique, name, is_not_null, indexName);
 	return FieldInfo(TypeInfo::deserialize(cis), is_unique, name, is_not_null, indexName);
 }
 
