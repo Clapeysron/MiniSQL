@@ -79,7 +79,7 @@ bool BufferManager::readDataFromFile(string filename, int blockIndex, char *read
     return buffers[bufferIndex].readBlock(blockIndex, readBuffer);
 }
 
-bool BufferManager::readDatas(string filename, vector<char *> results){
+bool BufferManager::readDatas(string filename, vector<char *> &results){
     int bufferIndex = getIndexByFileName(filename);
     if(bufferIndex == -1){
         buildBuffer(filename);
