@@ -598,17 +598,31 @@ string API::drop_index(string table_name, string index_name) {
 string API::show_tables() {
 	// TODO: API show_tables
 	vector<string> result =  CM.show_tables();
-	for (size_t i = 0; i < result.size(); i++) {
-		std::cout << result[i] << std::endl;
-	}
 	string ret_string;
 	ret_string += "+---------+----------+\n";
 	ret_string += "| Tables in Database |\n";
 	ret_string += "+---------+----------+\n";
-	ret_string += "| ABC                |\n";
-	ret_string += "| BCD                |\n";
+	for (size_t i = 0; i < result.size(); i++)
+	{
+		string temp_string = result[i];
+		ret_string += "| ";
+		if (temp_string.size()>18)
+		{
+			ret_string += temp_string.substr(0,15);
+			ret_string += "...";
+		}
+		else
+		{
+			ret_string += temp_string;
+			for(int i=0; i<18-temp_string.size(); i++) ret_string += " ";
+		}
+		ret_string += " |\n";
+	}
 	ret_string += "+---------+----------+\n";
-	ret_string += "9 tables in database (0.00 sec)\n";
+	stringstream tempstream;
+	tempstream << result.size();
+	ret_string += tempstream.str();
+	ret_string += " tables in database (0.00 sec)\n";
 	return ret_string;
 }
 
