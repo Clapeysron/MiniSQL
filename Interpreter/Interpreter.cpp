@@ -9,12 +9,26 @@
 #include "Interpreter.hpp"
 #include "API.hpp"
 #include <sstream>
+#include "../BufferManager/BufferManager.h"
+#include "../IndexManager/IndexManager.h"
+#include "../CatalogManager/CatalogManager.h"
+
 using namespace std;
 
 void Interpreter::main_loop(istream& input)
 {
+
+
     string sql;
     API sql_api;
+	/*CatalogManager CM = CatalogManager("catalog");
+	IndexManager IM = IndexManager("index");
+	BufferManager BM = BufferManager();
+	
+	sql_api.CM = CM;
+	sql_api.IM = IM;*/
+
+
     cout << "Minisql> ";
     while( input.peek()!=EOF )
     {

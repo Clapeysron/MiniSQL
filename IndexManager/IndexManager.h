@@ -16,7 +16,7 @@ template <typename T>
 class Index {
 public:
 	using record_ptr = int;
-	Index() = delete;
+	//Index() = delete;
 	Index(std::string indexName, std::string fieldName, std::string tableName, BPlusTree<T> tree) :
 		_indexName(indexName),
 		_fieldName(fieldName),

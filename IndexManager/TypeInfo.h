@@ -22,10 +22,13 @@ public:
 		switch (type) {
 		case 82:
 			_type = Chars;
+			break;
 		case 83:
 			_type = Int;
+			break;
 		case 84:
 			_type = Float;
+			break;
 		default:
 			_type = Int;
 			std::cerr << "TypeInfo constructor: no such type" << std::endl;

@@ -82,7 +82,7 @@ bool BufferUnit::writeBlock(int index, char *writeBuffer){
             swapBlock(index, newIndex);
         }else{ // write a block between the start block and the end block.
             if(blockIndexInBuffer[index] != -1){ // if the block is in the buffer, write to the data and change the flags.
-                memcpy(blocks[blockIndexInBuffer[index]].data, writeBuffer, blockSize);
+                memcpy(blocks[blockIndexInBuffer[index]].data, writeBuffer, (size_t)blockSize);
                 blocks[blockIndexInBuffer[index]].edited = 1;
                 blocks[blockIndexInBuffer[index]].flag = 1;
             }else{
@@ -92,12 +92,12 @@ bool BufferUnit::writeBlock(int index, char *writeBuffer){
                 if(blocks[newIndex].valid){
                     blockIndexInBuffer[blocks[newIndex].index] = -1;
                 }
-                memcpy(blocks[newIndex].data, writeBuffer, blockSize);
+                memcpy(blocks[newIndex].data, writeBuffer, (size_t)blockSize);
                 blocks[newIndex].edited = 1;
                 blocks[newIndex].flag = 1;
             }
         }
-
+		return true;
     }
 }
 
@@ -144,6 +144,7 @@ bool BufferUnit::deleteLastBlock(){
         blocks[index].flag = false;
         blocks[index].valid = false;
     }
+	return true;
 }
 
 BufferUnit::BufferUnit(string filename, int blockSize, int bufferSize){
@@ -171,7 +172,11 @@ BufferUnit::BufferUnit(string filename, int blockSize, int bufferSize){
 
     blockIndexInBuffer = vector<int>(filesize / blockSize, -1);
     for (int i = 0; i < bufferSize; ++i) {
-        blocks.push_back(BufferDataBlock(blockSize));
+        //blocks.push_back(BufferDataBlock(blockSize));
+		/*BufferDataBlock a(blockSize);
+		blocks.push_back(a);*/
+		//BufferDataBlock()
+		blocks.emplace_back(blockSize);
     }
 
     clockIndex = bufferSize - 1;

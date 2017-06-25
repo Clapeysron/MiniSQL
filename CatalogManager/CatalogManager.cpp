@@ -117,18 +117,23 @@ const std::pair<Type, std::string>& TableInfo::get_primary_index() {
 CatalogManager::CatalogManager(std::string fileName) :
 	_fileName(fileName){
 	std::vector<char*> allBlocks;
-	BM.readDatas(fileName, allBlocks);
-	for (size_t i = 0; i < allBlocks.size(); i++) {
-		CharInStream cis(allBlocks[i], BM.getBlockSize());
+	if (BM.createFile(fileName)) {
 
-		std::string table_name;
+	} else {
+		BM.readDatas(fileName, allBlocks);
+		for (size_t i = 0; i < allBlocks.size(); i++) {
+			CharInStream cis(allBlocks[i], BM.getBlockSize());
 
-		TableInfo temp_table = TableInfo::deserialize(cis);
-		_tables.emplace(temp_table.getName(), temp_table);
+			std::string table_name;
+
+			TableInfo temp_table = TableInfo::deserialize(cis);
+			_tables.emplace(temp_table.getName(), temp_table);
+		}
+		for (size_t i = 0; i < allBlocks.size(); i++) {
+			delete[] allBlocks[i];
+		}
 	}
-	for (size_t i = 0; i < allBlocks.size(); i++) {
-		delete[] allBlocks[i];
-	}
+	
 }
 
 CatalogManager::~CatalogManager() {

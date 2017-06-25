@@ -32,7 +32,7 @@ public:
     BufferDataBlock(const BufferDataBlock &b){
         lock = 0;
         edited = 0;
-        this->size = size;
+        this->size = b.size;
         index = -1;
         valid = 0;
         flag = 0;

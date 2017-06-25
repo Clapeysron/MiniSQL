@@ -15,6 +15,9 @@
 #include <string>
 #include <vector>
 #include "Interpreter.hpp"
+#include "../CatalogManager/CatalogManager.h"
+#include "../IndexManager/IndexManager.h"
+#include "../BufferManager/BufferManager.h"
 using namespace std;
 extern "C" char sql_from_bison[1000];
 extern "C" int first_flag;
@@ -22,9 +25,7 @@ class API
 {
 private:
     string sql_query;
-    //static CatalogManager& CM;
-    //static RecordManager& RM;
-    //static IndexManager& IM;
+    
     string select_all(string table_name, vector<string> col_list);
     string select(string table_name, vector<string> col_list,vector<int> indexs);
     string insert(string table_name, vector<int> type_list, vector<string> value_list);
@@ -44,6 +45,9 @@ private:
 public:
     string exec();
     void set_sql(string sql);
+	static CatalogManager CM;
+	//static RecordManager& RM;
+	static IndexManager IM;
 };
 
 #ifdef __cplusplus

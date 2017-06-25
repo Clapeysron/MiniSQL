@@ -32,7 +32,7 @@ public:
     bool writeDataToFile(string filename, int blockIndex, char *writeBuffer); // Write the data to the specific blockIndex to the file from the memory.
     bool lockBlock(string filename, int blockIndex, int lock); // lockBlockck or Unlock the Block in the specific file.
     bool deleteLastBlockOfFile(string filename);
-    BufferManager(int blockSize, int bufferSize); // Constructor
+    BufferManager(int blockSize , int bufferSize); // Constructor
     ~BufferManager(); // Destructor
 
 	int getNewBlockNum(string filename);
