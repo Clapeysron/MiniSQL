@@ -346,70 +346,70 @@ string API::select(string table_name, vector<string> col_list, vector<int> index
 vector<int> API::search_between(string table_name, int type_1, string comp, int type_2, string between_1, int type_3, string between_2) {
 	// TODO: API search_between
 	vector<int> ret_indexs;
-	//if (!CM.have_table(table_name)) {
-	//	std::cerr << "no such table" << std::endl;
-	//	ret_indexs.push_back(-1); // -1 for no ret_indexs
-	//	return ret_indexs;
-	//} else {
-	//	TableInfo& temp_table = CM.find_table(table_name);
-	//	if (type_1 == 81) {
-	//		if (!temp_table.have_field(comp)) {
-	//			std::cerr << "no such column" << std::endl;
-	//			ret_indexs.push_back(-1); // -1 for no ret_indexs
-	//			return ret_indexs;
-	//		} else {
-	//			FieldInfo temp_field = IM.find_field(comp);
-	//			std::stringstream ss;
-	//			ss << between_1 << between_2;
+	if (!CM.have_table(table_name)) {
+		std::cerr << "no such table" << std::endl;
+		ret_indexs.push_back(-1); // -1 for no ret_indexs
+		return ret_indexs;
+	} else {
+		TableInfo& temp_table = CM.find_table(table_name);
+		if (type_1 == 81) {
+			if (!temp_table.have_field(comp)) {
+				std::cerr << "no such column" << std::endl;
+				ret_indexs.push_back(-1); // -1 for no ret_indexs
+				return ret_indexs;
+			} else {
+				FieldInfo temp_field = IM.find_field(comp);
+				std::stringstream ss;
+				ss << between_1 << between_2;
 
-	//			std::string temp_index = temp_table.find_index(comp);
-	//			if (type_2 == temp_field.get_type_magic_num() && type_3 == temp_field.get_type_magic_num()) {
-	//				if (temp_table.have_index(comp)) {
-	//					std::string temp_index = temp_table.find_index(comp);
-	//					switch (type_2) {
-	//					case 82: {
-	//						std::string real_between_1;
-	//						std::string real_between_2;
-	//						ss >> real_between_1 >> real_between_2;
-	//						ret_indexs = IM.search_range(temp_index, &real_between_1, &real_between_2);
-	//						break;
-	//					}
+				//std::string temp_index = temp_table.find_index(comp);
+				if (type_2 == temp_field.get_type_magic_num() && type_3 == temp_field.get_type_magic_num()) {
+					if (temp_table.have_index(comp)) {
+						std::string temp_index = temp_table.find_index(comp);
+						switch (type_2) {
+						case 82: {
+							std::string real_between_1;
+							std::string real_between_2;
+							ss >> real_between_1 >> real_between_2;
+							ret_indexs = IM.search_range(temp_index, &real_between_1, &real_between_2);
+							break;
+						}
 
-	//					case 83: {
-	//						int real_between_1;
-	//						int real_between_2;
-	//						ss >> real_between_1 >> real_between_2;
-	//						ret_indexs = IM.search_range(temp_index, &real_between_1, &real_between_2);
-	//						break;
-	//					}
+						case 83: {
+							int real_between_1;
+							int real_between_2;
+							ss >> real_between_1 >> real_between_2;
+							ret_indexs = IM.search_range(temp_index, &real_between_1, &real_between_2);
+							break;
+						}
 
-	//					case 84: {
-	//						float real_between_1;
-	//						float real_between_2;
-	//						ss >> real_between_1 >> real_between_2;
-	//						ret_indexs = IM.search_range(temp_index, &real_between_1, &real_between_2);
-	//						break;
-	//					}
-	//					default:
-	//						std::cerr << "no such type_2" << std::endl;
-	//						ret_indexs.push_back(-1); // -1 for no ret_indexs
-	//						return ret_indexs;
-	//					}
-	//				} else {
-	//					ret_indexs.push_back(-2); // -2 for all ret_indexs
-	//					return ret_indexs;
-	//				}
-	//			} else {
-	//				std::cerr << "type not match" << std::endl;
-	//				ret_indexs.push_back(-1); // -1 for no ret_indexs
-	//				return ret_indexs;
-	//			}
+						case 84: {
+							float real_between_1;
+							float real_between_2;
+							ss >> real_between_1 >> real_between_2;
+							ret_indexs = IM.search_range(temp_index, &real_between_1, &real_between_2);
+							break;
+						}
+						default:
+							std::cerr << "no such type_2" << std::endl;
+							ret_indexs.push_back(-1); // -1 for no ret_indexs
+							return ret_indexs;
+						}
+					} else {
+						ret_indexs.push_back(-2); // -2 for all ret_indexs
+						return ret_indexs;
+					}
+				} else {
+					std::cerr << "type not match" << std::endl;
+					ret_indexs.push_back(-1); // -1 for no ret_indexs
+					return ret_indexs;
+				}
 
-	//		}
-	//	} else {
-	//		//TODO: to implement 3=3, 3=a 
-	//	}
-	//}
+			}
+		} else {
+			//TODO: to implement 3=3, 3=a 
+		}
+	}
 
 	return ret_indexs;
 }
@@ -615,6 +615,7 @@ string API::create(string table_name, vector<string> name_list, vector<int> type
 	}
 
 	IM.init(table_name);
+	RM.createTable(table_name);
 
 	//string > out_string
 
@@ -634,13 +635,22 @@ string API::create_index(string table_name, string index_name, vector<string> co
 }
 
 string API::drop_table(string table_name) {
+	string ret_string;
 	// TODO: API drop_table
 	// bool CM.have_table(table_name);
 	// bool IM.drop_table(table_name);
 	// bool RM.drop_table(table_name);
 	// string > out_string
-	string ret_string;
-	ret_string += "Query OK, 0 rows affected (0.01 sec)\n";
+	if (CM.have_table(table_name)) {
+		CM.drop_table(table_name);
+		//IM.drop_table();
+		//RM.drop_table();
+		ret_string += "Query OK, 0 rows affected (0.01 sec)\n";
+	} else {
+		ret_string += "Error: have no such table\n";
+	}
+	
+	
 	return ret_string;
 }
 
