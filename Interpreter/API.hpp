@@ -18,6 +18,7 @@
 #include "../CatalogManager/CatalogManager.h"
 #include "../IndexManager/IndexManager.h"
 #include "../BufferManager/BufferManager.h"
+#include "../RecordManager/RecordManager.h"
 using namespace std;
 extern "C" char sql_from_bison[1000];
 extern "C" int first_flag;
@@ -46,8 +47,9 @@ public:
     string exec();
     void set_sql(string sql);
 	static CatalogManager CM;
-	//static RecordManager& RM;
+	static RecordManager RM;
 	static IndexManager IM;
+	static BufferManager BM;
 };
 
 #ifdef __cplusplus

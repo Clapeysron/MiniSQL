@@ -69,7 +69,7 @@ public:
 		couts << _size;
 	}
 
-	int get_type_magic() {
+	int get_type_magic() const {
 		switch (_type) {
 		case Int:
 			return 83;
@@ -91,7 +91,7 @@ public:
 		return _type;
 	}
 
-	size_t get_size() {
+	size_t get_size() const {
 		return _size;
 	}
 

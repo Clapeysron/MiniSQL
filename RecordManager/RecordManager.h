@@ -14,7 +14,8 @@
 #include <algorithm>
 #define DATA_FILE_EXTENSION (".MYD")
 #define DATA_FILE_PATH ("./minisql_data/")
-#define GET_FILENAME(tn) (DATA_FILE_PATH + (tn) + DATA_FILE_EXTENSION)
+//#define GET_FILENAME(tn) (DATA_FILE_PATH + (tn) + DATA_FILE_EXTENSION)
+#define GET_FILENAME(tn) ((tn) + DATA_FILE_EXTENSION)
 
 class RecordManager {
 private:

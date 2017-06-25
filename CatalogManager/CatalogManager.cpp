@@ -4,7 +4,7 @@
 #include "../BufferManager/BufferManager.h"
 
 
-BufferManager CatalogManager::BM = BufferManager(4096,256);
+BufferManager CatalogManager::BM = BufferManager(4096, 256);
 
 TableInfo::TableInfo(const std::vector<FieldInfo>& fields, const std::string & name, const size_t & primary) :
 	_fields(fields),
@@ -27,17 +27,17 @@ TableInfo TableInfo::deserialize(CharInStream& cis) {
 		//fields.push_back(temp);
 		fields.push_back(FieldInfo::deserialize(cis));
 	}
-	
+
 	return TableInfo(fields, name, primary);
 }
 
 void TableInfo::serialize(CharOutStream& couts)const {
 	couts << _name << _fields.size() << _primary;
-	
+
 	for (size_t i = 0; i < _fields.size(); i++) {
 		_fields[i].serialize(couts);
 	}
-	
+
 
 
 }
@@ -117,7 +117,7 @@ const std::pair<Type, std::string>& TableInfo::get_primary_index() {
 }
 
 CatalogManager::CatalogManager(std::string fileName) :
-	_fileName(fileName){
+	_fileName(fileName) {
 	std::vector<char*> allBlocks;
 	if (BM.createFile(fileName)) {
 
@@ -135,7 +135,7 @@ CatalogManager::CatalogManager(std::string fileName) :
 			delete[] allBlocks[i];
 		}
 	}
-	
+
 }
 
 CatalogManager::~CatalogManager() {
@@ -222,7 +222,7 @@ FieldInfo FieldInfo::deserialize(CharInStream & cis) {
 	cis >> is_not_null;
 	cis >> name;
 	cis >> indexName;
-	
+
 	//TypeInfo temp = TypeInfo::deserialize(cis);
 	//return FieldInfo(temp, is_unique, name, is_not_null, indexName);
 	return FieldInfo(TypeInfo::deserialize(cis), is_unique, name, is_not_null, indexName);

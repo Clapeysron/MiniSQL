@@ -7,6 +7,7 @@
 #include <utility>
 #include "..\IndexManager\TypeInfo.h"
 #include "..\BufferManager\BufferManager.h"
+#include "..\RecordManager\RecordManager.h"
 #include <iostream>
 #include <algorithm>
 
@@ -21,7 +22,7 @@ public:
 
 	void serialize(CharOutStream& couts)const;
 
-	std::string get_name() {
+	std::string get_name()const {
 		return _name;
 	}
 
@@ -31,9 +32,21 @@ public:
 		return _type;
 	}
 
-	std::string get_index() {
+	const TypeInfo& cget_type() const {
+		return _type;
+	}
+
+	std::string get_index()const {
 		return _indexName;
 	}
+
+	bool get_unique()const {
+		return _is_unique;
+	}
+
+	/*AttrInfo convert_to_attr() const  {
+		return AttrInfo(_name, _type.get_type_magic(), _type.get_size(), _is_unique, _indexName=="");
+	}*/
 
 private:
 	TypeInfo _type;
@@ -64,6 +77,19 @@ public:
 
 	bool have_columns(const std::vector<std::string>&  fieldNames);
 
+	bool have_columns_type(const std::vector<int>& types) {
+		if (types.size() != _fields.size()) {
+			return false;
+		} else {
+			for (size_t i = 0; i < types.size(); i++) {
+				if (types[i] != _fields[i].get_type_magic_num()) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	bool have_index(std::string fieldName);
 
 	std::pair<Type, std::string> find_index(const std::string& fieldName);
@@ -74,11 +100,17 @@ public:
 
 	const std::pair<Type, std::string>& get_primary_index();
 
+	const std::vector<FieldInfo>& get_fields() {
+		return _fields;
+	}
+
 	void show_fields() {
 		for (size_t i = 0; i < _fields.size(); i++) {
 			std::cout << _fields[i].get_name() << " " << _fields[i].get_type().name() << std::endl;
 		}
 	}
+
+
 
 
 private:
@@ -139,6 +171,10 @@ public:
 		return find_table(tableName).have_column(column);
 	}
 
+	bool have_column_type(const std::string& tableName, const std::vector<int>& types) {
+		return _tables.at(tableName).have_columns_type(types);
+	}
+
 	const TypeInfo& get_type(std::string tableName, std::string fieldName) {
 		return _tables.at(tableName).get_type(fieldName);
 	}
@@ -158,7 +194,7 @@ public:
 private:
 	std::map<std::string, TableInfo> _tables;
 	std::string _fileName;
-	
+
 	static BufferManager BM;
 
 };

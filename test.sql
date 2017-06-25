@@ -18,3 +18,10 @@ create table test3(
     b float,
     c varchar(5)
 );
+
+insert into test0 values(0,0);
+insert into test0 values(0);
+insert into test0 values(0,0,0);
+insert into test0 values(0,0.0);
+insert into test0 values(0,"fdafas");
+insert into test values(0,0);

@@ -9,8 +9,12 @@
 #include "API.hpp"
 #include <algorithm>
 
+
+BufferManager API::BM = BufferManager(4096, 256);
 CatalogManager API::CM = CatalogManager("catalog");
-//BufferManger API::BM = BufferManager();
+RecordManager API::RM = RecordManager(BM, 4096);
+IndexManager API::IM = IndexManager("index");
+
 
 void API::set_sql(string sql) {
 	sql_query.clear();
@@ -507,13 +511,57 @@ string API::delete_part(string table_name, vector<int> indexs) {
 }
 
 string API::insert(string table_name, vector<int> type_list, vector<string> value_list) {
+	std::reverse(type_list.begin(), type_list.end());
+	std::reverse(value_list.begin(), value_list.end());
+
+
 	// TODO: API insert
-	// bool CM.have_table(table_name);
-	// bool CM.check_list(table_name,type_list);
-	// int IM.insert(table_name, type_list, value_list);
-	// string RM.insert(table_name, type_list, value_list);
-	// string > out_string
 	string ret_string;
+	if (CM.have_table(table_name)) {
+		if (CM.have_column_type(table_name, type_list)) {
+			
+			int buffsize = 0;
+			std::vector<int> length_list;
+
+			std::vector<AttrInfo> ats;
+			const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_fields();
+			for (size_t i = 0; i < fields.size(); i++) {
+				int length = type_list[i] == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
+				if (value_list[i].size()>length) {
+					ret_string += "'" +value_list[i] + "' 's length is larger than maximum";
+					return ret_string;
+				}
+				bool index = fields[i].get_index() == "" ? false : true;
+				ats.push_back(AttrInfo(fields[i].get_name(), type_list[i], length, fields[i].get_unique(), index));
+				buffsize += length;
+				length_list.push_back(length);
+			}
+			TableStruct ts(table_name, IM.get_record_size(table_name), ats);
+
+			char * data = new char[buffsize];
+			int offset = 0;
+			for (size_t i = 0; i < value_list.size(); i++) {
+				memcpy(data+offset, value_list[i].data(), value_list.size());
+				offset += length_list[i];
+			}
+
+			RM.insertIntoTable(ts, data);
+
+
+			
+			//delete[] data;
+			//RM.insert(table_name, type_list, value_list);
+			//IM.insert(table_name, type_list, value_list);
+		} else {
+			ret_string += "Error: values' type doesn't match table'" + table_name + "'\n";
+			return ret_string;
+		}
+
+	} else {
+		ret_string += "Error: have no such table\n";
+		return ret_string;
+	}
+
 	ret_string += "Query OK, 3 row affected (0.02 sec)\n";
 	return ret_string;
 }
@@ -543,18 +591,18 @@ string API::update_part(string table_name, string col_name, int update_type, str
 }
 
 string API::create(string table_name, vector<string> name_list, vector<int> type_list, vector<int> length_list, vector<int> primary_flag, vector<int> unique_flag, vector<int> nnull_flag) {
-	
+
 	std::reverse(name_list.begin(), name_list.end());
 	std::reverse(type_list.begin(), type_list.end());
 	std::reverse(length_list.begin(), length_list.end());
 	std::reverse(primary_flag.begin(), primary_flag.end());
 	std::reverse(unique_flag.begin(), unique_flag.end());
 	std::reverse(nnull_flag.begin(), nnull_flag.end());
-	
-	
-	
+
+
+
 	string ret_string;
-	if (table_name.size()>20) {
+	if (table_name.size() > 20) {
 		ret_string += "ERROR : Table name should be less than 20 \n";
 	} else {
 		if (!CM.have_table(table_name)) {
@@ -565,7 +613,8 @@ string API::create(string table_name, vector<string> name_list, vector<int> type
 			ret_string += "ERROR : Table '" + table_name + "' already exists\n";
 		}
 	}
-	
+
+	IM.init(table_name);
 
 	//string > out_string
 
@@ -609,25 +658,20 @@ string API::drop_index(string table_name, string index_name) {
 }
 
 string API::show_tables() {
-	// TODO: API show_tables
-	vector<string> result =  CM.show_tables();
+	vector<string> result = CM.show_tables();
 	string ret_string;
 	ret_string += "+---------+----------+\n";
 	ret_string += "| Tables in Database |\n";
 	ret_string += "+---------+----------+\n";
-	for (size_t i = 0; i < result.size(); i++)
-	{
+	for (size_t i = 0; i < result.size(); i++) {
 		string temp_string = result[i];
 		ret_string += "| ";
-		if (temp_string.size()>18)
-		{
-			ret_string += temp_string.substr(0,15);
+		if (temp_string.size() > 18) {
+			ret_string += temp_string.substr(0, 15);
 			ret_string += "...";
-		}
-		else
-		{
+		} else {
 			ret_string += temp_string;
-			for(int i=0; i<18-temp_string.size(); i++) ret_string += " ";
+			for (int i = 0; i < 18 - temp_string.size(); i++) ret_string += " ";
 		}
 		ret_string += " |\n";
 	}
@@ -640,8 +684,6 @@ string API::show_tables() {
 }
 
 string API::show_status() {
-	// TODO: API show_tables
-	// vector<string> show_tables();
 	std::vector<std::string> tableNames = CM.show_tables();
 	for (auto i = tableNames.begin(); i != tableNames.end(); i++) {
 		std::cout << *i << std::endl;
