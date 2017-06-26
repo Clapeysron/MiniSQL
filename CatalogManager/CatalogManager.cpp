@@ -186,7 +186,7 @@ void CatalogManager::drop_table(std::string & tableName) {
 
 	if (0 == _tables.erase(tableName)) {
 		//throw SomeError("Error: no such table '" + tableName + "'");
-		std::cerr << "Error: no such table '" + tableName + "'" << std::endl;
+		std::cout << "Error:  CatalogManager:no such table '" + tableName + "'" << std::endl;
 	}
 }
 

@@ -44,6 +44,11 @@ public:
 		return _is_unique;
 	}
 
+	Type drop_index() {
+		_indexName = "";
+		return _type.get_type();
+	}
+
 	/*AttrInfo convert_to_attr() const  {
 		return AttrInfo(_name, _type.get_type_magic(), _type.get_size(), _is_unique, _indexName=="");
 	}*/
@@ -95,6 +100,26 @@ public:
 	
 
 	std::pair<Type, std::string> find_index(const std::string& fieldName);
+
+	int have_index_with_index_name(const std::string& indexName) {
+		for (size_t i = 0; i < _fields.size(); i++) {
+			if (_fields[i].get_index() == indexName) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	Type drop_index_with_index_name(const std::string& indexName) {
+		for (size_t i = 0; i < _fields.size(); i++) {
+			if (_fields[i].get_index() == indexName) {
+				return _fields[i].drop_index();
+			}
+		}
+		
+	}
+
+	//bool have_index_with_index_name(const )
 
 	TypeInfo get_type(std::string fieldName);
 
@@ -171,6 +196,14 @@ public:
 
 	std::vector<std::pair<Type, std::string>> find_indices(std::string tableName) {
 		return find_table(tableName).get_indices();
+	}
+
+	bool have_index_with_index_name(const std::string& tableName, const std::string& indexName) {
+		return find_table(tableName).have_index_with_index_name(indexName);
+	}
+
+	Type drop_index_with_index_name(const std::string& tableName, const std::string& indexName) {
+		return find_table(tableName).drop_index_with_index_name(indexName);
 	}
 
 	std::pair<Type, std::string> find_index(const std::string& tableName, const std::string& fieldName) {

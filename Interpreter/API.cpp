@@ -682,15 +682,13 @@ string API::drop_table(string table_name) {
 
 string API::drop_index(string table_name, string index_name) {
 	// TODO: API drop_index
-	// bool CM.have_table(table_name);
-	// bool CM.have_index(table_name, index_name);
-	// bool IM.drop_index(index_name);
-	// string > out_string
+	
 	string ret_string;
 	if (CM.have_table(table_name)) {
-		if (CM.have_index(table_name, index_name)) {
-			CM
-			IM.drop_index(index_name);
+		
+		if (CM.have_index_with_index_name(table_name, index_name)) {
+			Type t = CM.drop_index_with_index_name(table_name, index_name);
+			IM.drop_index(t, index_name);
 			ret_string += "Query OK, 0 rows affected (0.01 sec)\n";
 		} else {
 			ret_string += "ERROR: have no such index\n";
@@ -700,7 +698,8 @@ string API::drop_index(string table_name, string index_name) {
 	}
 
 	// notice that IM should be called first, delete indices then delete table catalog
-	
+	// why?????
+
 	return ret_string;
 }
 
