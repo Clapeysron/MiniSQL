@@ -44,9 +44,9 @@ public:
 		return _is_unique;
 	}
 
-	Type drop_index() {
+	void drop_index() {
 		_indexName = "";
-		return _type.get_type();
+		
 	}
 
 	/*AttrInfo convert_to_attr() const  {
@@ -101,19 +101,19 @@ public:
 
 	std::pair<Type, std::string> find_index(const std::string& fieldName);
 
-	int have_index_with_index_name(const std::string& indexName) {
+	bool have_index_with_index_name(const std::string& indexName) {
 		for (size_t i = 0; i < _fields.size(); i++) {
 			if (_fields[i].get_index() == indexName) {
-				return i;
+				return true;
 			}
 		}
-		return -1;
+		return false;
 	}
 
-	Type drop_index_with_index_name(const std::string& indexName) {
+	void drop_index_with_index_name(const std::string& indexName) {
 		for (size_t i = 0; i < _fields.size(); i++) {
 			if (_fields[i].get_index() == indexName) {
-				return _fields[i].drop_index();
+				_fields[i].drop_index();
 			}
 		}
 		
@@ -126,6 +126,16 @@ public:
 	const std::vector<std::pair<Type, std::string>>& get_indices();
 
 	const std::pair<Type, std::string>& get_primary_index();
+
+	Type get_index_type_with_index_name(const std::string& indexName) {
+		for (size_t i = 0; i < _fields.size(); i++) {
+			if (_fields[i].get_index() == indexName) {
+				return _fields[i].get_type().get_type();
+			}
+		}
+		std::cout << "Error: CatalogManager: have no such indexName" << std::endl;
+		return Int;
+	}
 
 	const std::vector<FieldInfo>& get_columns() {
 		return _fields;
@@ -202,8 +212,8 @@ public:
 		return find_table(tableName).have_index_with_index_name(indexName);
 	}
 
-	Type drop_index_with_index_name(const std::string& tableName, const std::string& indexName) {
-		return find_table(tableName).drop_index_with_index_name(indexName);
+	void drop_index_with_index_name(const std::string& tableName, const std::string& indexName) {
+		find_table(tableName).drop_index_with_index_name(indexName);
 	}
 
 	std::pair<Type, std::string> find_index(const std::string& tableName, const std::string& fieldName) {
@@ -227,8 +237,8 @@ public:
 		return _tables.at(tableName).have_columns_type(types);
 	}
 
-	bool have_index(std::string tableName, std::string indexName) {
-		return _tables.at(tableName).have_index(indexName);
+	bool have_index(const std::string& tableName, const std::string& fieldName) {
+		return _tables.at(tableName).have_index(fieldName);
 	}
 
 	const TypeInfo& get_type(std::string tableName, std::string fieldName) {
@@ -239,9 +249,15 @@ public:
 		return _tables.at(tableName).get_indices();
 	}
 
+	Type get_index_type_with_index_name(const std::string& tableName, const std::string& indexName) {
+		return _tables.at(tableName).get_index_type_with_index_name(indexName);
+	}
+
+
 	void show_fields(const std::string& tableName) {
 		_tables.at(tableName).show_fields();
 	}
+
 
 	std::vector<std::string> show_tables();
 
