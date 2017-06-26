@@ -92,6 +92,8 @@ public:
 
 	bool have_index(std::string fieldName);
 
+	
+
 	std::pair<Type, std::string> find_index(const std::string& fieldName);
 
 	TypeInfo get_type(std::string fieldName);
@@ -175,6 +177,8 @@ public:
 		return find_table(tableName).find_index(fieldName);
 	}
 
+	
+	
 	bool have_table(const std::string& name) {
 		return _tables.count(name) == 1;
 	}
@@ -188,6 +192,10 @@ public:
 
 	bool have_column_type(const std::string& tableName, const std::vector<int>& types) {
 		return _tables.at(tableName).have_columns_type(types);
+	}
+
+	bool have_index(std::string tableName, std::string indexName) {
+		return _tables.at(tableName).have_index(indexName);
 	}
 
 	const TypeInfo& get_type(std::string tableName, std::string fieldName) {

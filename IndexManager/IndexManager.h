@@ -115,7 +115,7 @@ public:
 				Index<int>(indexName,
 					fieldName,
 					tableName,
-					BPlusTree<int>::create_tree(entities, 4)));
+					BPlusTree<int>::create(entities, 4)));
 			break;
 		case Float:
 			_intIndex.emplace(
@@ -123,7 +123,7 @@ public:
 				Index<float>(indexName,
 					fieldName,
 					tableName,
-					BPlusTree<float>::create_tree(entities, 4)));
+					BPlusTree<float>::create(entities, 4)));
 			break;
 		case Chars:
 			_intIndex.emplace(
@@ -131,7 +131,7 @@ public:
 				Index<std::string>(indexName,
 					fieldName,
 					tableName,
-					BPlusTree<std::string>::create_tree(entities, temp_type.get_size())));
+					BPlusTree<std::string>::create(entities, temp_type.get_size())));
 			break;
 		}
 	}
@@ -157,6 +157,28 @@ public:
 		const std::vector<std::pair<Type, std::string>>& indices = CatalogManager::Instance().get_indices(tableName);
 		for (auto i = indices.cbegin(); i != indices.cend(); i++) {
 			drop_index((*i).first, (*i).second);
+		}
+	}
+
+	void drop_table(std::string& tableName) {
+		std::vector<std::pair<Type, std::string>> index_names = CatalogManager::Instance().find_indices(tableName);
+		for (auto i = index_names.begin(); i != index_names.end(); i++) {
+			switch ((*i).first) {
+			case Int:
+				(*_floatIndex.find((*i).second)).second.clear();
+				_floatIndex.erase(i->second);
+				break;
+			case Float:
+				(*_floatIndex.find((*i).second)).second.clear();
+				_floatIndex.erase(i->second);
+				break;
+			case Chars:
+				(*_stringIndex.find((*i).second)).second.clear();
+				_floatIndex.erase(i->second);
+				break;
+			default:
+				std::cout << "no such type" << std::endl;
+			}
 		}
 	}
 

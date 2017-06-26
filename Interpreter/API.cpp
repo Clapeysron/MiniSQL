@@ -400,9 +400,9 @@ vector<int> API::search_between(string table_name, int type_1, string comp, int 
 					} else {
 						//TODO: to be implemented by melody;
 						std::cout << "dfz have no index, to be fixed by melody" << std::endl;
-					} 
+					}
 				} else {
-					std::cerr << "type not match" << std::endl;
+					std::cout << "type not match" << std::endl;
 					ret_indexs.push_back(-3); // -3 for type not match
 					return ret_indexs;
 				}
@@ -422,95 +422,105 @@ vector<int> API::search_between(string table_name, int type_1, string comp, int 
 
 vector<int> API::search_where(string table_name, int comparison_type, int type_1, string comp_1, int type_2, string comp_2) {
 	vector<int> ret_indexs;
-	//   // TODO: API search_where
-	   ////std::vector<int> result;
-	   //if (!CM.have_table(table_name)) {
-	   //	std::cerr << "no such table" << std::endl;
-	   //	ret_indexs.push_back(-1); // -1 for no result
-	   //	return ret_indexs;
-	   //} else {
-	   //	TableInfo& temp_table = CM.find_table(table_name);
-	   //	if (type_1 == 81) {
-	   //		if (!temp_table.have_field(comp_1)) {
-	   //			std::cerr << "no such column" << std::endl;
-	   //			ret_indexs.push_back(-1); // -1 for no result
-	   //			return ret_indexs;
-	   //		} else {
-	   //			FieldInfo temp_field = IM.find_field(comp_1);
-	   //			if (type_2 == temp_field.get_type_magic_num()) {
-	   //				if (temp_table.have_index(comp_1)) {
+	// TODO: API search_where
+	//std::vector<int> result;
+	if (!CM.have_table(table_name)) {
+		std::cerr << "no such table" << std::endl;
+		ret_indexs.push_back(-1); // -1 for no result
+		return ret_indexs;
+	} else {
+		TableInfo& temp_table = CM.find_table(table_name);
+		if (type_1 == 81) {
+			if (!temp_table.have_column(comp_1)) {
+				std::cout << "no such column" << std::endl;
+				ret_indexs.push_back(-2); // -1 for no such column 
+				return ret_indexs;
+			} else {
+				FieldInfo temp_field = temp_table.get_column(comp_1);
+				if (type_2 == temp_field.get_type_magic_num()) {
+					if (temp_table.have_index(comp_1)) {
 
-	   //					std::stringstream ss;
-	   //					ss << comp_2;
+						std::stringstream ss;
+						ss << comp_2;
 
-	   //					std::string temp_index = temp_table.find_index(comp_1);
-	   //					switch (type_2) {
-	   //					case 82: {
-	   //						std::string real_comp_2;
-	   //						ss >> real_comp_2;
-	   //						ret_indexs = IM.search_where(temp_index, comparison_type, real_comp_2);
-	   //						return ret_indexs;
-	   //						break;
-	   //					}
+						std::string temp_index = temp_table.find_index(comp_1).second;
+						switch (type_2) {
+						case 82: {
+							std::string real_comp_2;
+							ss >> real_comp_2;
+							ret_indexs = IM.search_where(temp_index, comparison_type, real_comp_2);
+							return ret_indexs;
+							break;
+						}
 
-	   //					case 83: {
-	   //						int real_comp_2;
-	   //						ss >> real_comp_2;
-	   //						ret_indexs = IM.search_where(temp_index, comparison_type, real_comp_2);
-	   //						return ret_indexs;
-	   //						break;
-	   //					}
+						case 83: {
+							int real_comp_2;
+							ss >> real_comp_2;
+							ret_indexs = IM.search_where(temp_index, comparison_type, real_comp_2);
+							return ret_indexs;
+							break;
+						}
 
-	   //					case 84: {
-	   //						float real_comp_2;
-	   //						ss >> real_comp_2;
-	   //						ret_indexs = IM.search_where(temp_index, comparison_type, real_comp_2);
-	   //						return ret_indexs;
-	   //						break;
-	   //					}
+						case 84: {
+							float real_comp_2;
+							ss >> real_comp_2;
+							ret_indexs = IM.search_where(temp_index, comparison_type, real_comp_2);
+							return ret_indexs;
+							break;
+						}
 
-	   //					default:
-	   //						std::cerr << "no such type_2" << std::endl;
-	   //						ret_indexs.push_back(-1); // -1 for no result
-	   //						return ret_indexs;
-	   //					}
-	   //				} else {
-	   //					ret_indexs.push_back(-2); // -2 for all result
-	   //					return ret_indexs;
-	   //				}
-	   //			} else {
-	   //				std::cerr << "type not match" << std::endl;
-	   //				ret_indexs.push_back(-1); // -1 for no result
-	   //				return ret_indexs;
-	   //			}
+						default:
+							std::cerr << "no such type_2" << std::endl;
+							ret_indexs.push_back(-3); // -1 for no result
+							return ret_indexs;
+						}
+					} else {
+						// TODO: to be fixed by melody
+						return ret_indexs;
+					}
+				} else {
+					std::cout << "type not match" << std::endl;
+					ret_indexs.push_back(-3); // -3 for no type
+					return ret_indexs;
+				}
 
-	   //		}
-	   //	} else {
-	   //		//TODO: to implement 3=3, 3=a 
-	   //	}
-	   //}
+			}
+		} else {
+			//TODO: to implement 3=3, 3=a
+			std::cout << "no such table" << std::endl;
+			ret_indexs.push_back(-1); // -1 for no type
+			return ret_indexs;
+		}
+	}
 	return ret_indexs;
 }
 
 string API::delete_all(string table_name) {
 	// TODO: API delete_all
-	// bool CM.have_table(table_name);
-	// int IM.delete_all(table_name);
-	// string RM.delete_all(table_name);
-	// string > out_string
 	string ret_string;
-	ret_string += "Query OK, 1 row affected (0.01 sec)\n";
+	if (CM.have_table(table_name)) {
+		// int IM.delete_all(table_name);
+		// string RM.delete_all(table_name);
+		ret_string += "Query OK, 1 row affected (0.01 sec)\n";
+	} else {
+		ret_string += "Error: have no such table\n";
+	}
+
 	return ret_string;
 }
 
 string API::delete_part(string table_name, vector<int> indexs) {
 	// TODO: API delete_part
-	// bool CM.have_table(table_name);
-	// int IM.delete_part(table_name, indexs);
-	// string RM.delete_part(table_name, indexs);
-	// string > out_string
+
 	string ret_string;
-	ret_string += "Query OK, 3 row affected (0.02 sec)\n";
+	if (CM.have_table(table_name)) {
+		// int IM.delete_part(table_name, indexs);
+		// string RM.delete_part(table_name, indexs);
+		ret_string += "Query OK, 3 row affected (0.02 sec)\n";
+	} else {
+		ret_string += "Error: have no such table\n";
+	}
+
 	return ret_string;
 }
 
@@ -523,7 +533,7 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 	string ret_string;
 	if (CM.have_table(table_name)) {
 		if (CM.have_column_type(table_name, type_list)) {
-			
+
 			int buffsize = 0;
 			std::vector<int> length_list;
 
@@ -531,8 +541,8 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 			const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
 			for (size_t i = 0; i < fields.size(); i++) {
 				int length = type_list[i] == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
-				if (value_list[i].size()>length) {
-					ret_string += "'" +value_list[i] + "' 's length is larger than maximum";
+				if (value_list[i].size() > length) {
+					ret_string += "'" + value_list[i] + "' 's length is larger than maximum";
 					return ret_string;
 				}
 				bool index = fields[i].get_index() == "" ? false : true;
@@ -545,17 +555,15 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 			char * data = new char[buffsize];
 			int offset = 0;
 			for (size_t i = 0; i < value_list.size(); i++) {
-				memcpy(data+offset, value_list[i].data(), value_list.size());
+				memcpy(data + offset, value_list[i].data(), value_list.size());
 				offset += length_list[i];
 			}
 
 			RM.insertIntoTable(ts, data);
+			//TODO: implement delete indexManager 
+			//IM.insert("", "", std::vector<int>(), std::vector<int>());
 
-			IM.insert("", "", std::vector<int>(), std::vector<int>());
-			
-			//delete[] data;
-			//RM.insert(table_name, type_list, value_list);
-			//IM.insert(table_name, type_list, value_list);
+			//No need for delete[]data because insertIntoData have done this;
 		} else {
 			ret_string += "Error: values' type doesn't match table'" + table_name + "'\n";
 			return ret_string;
@@ -604,7 +612,7 @@ string API::create(string table_name, vector<string> name_list, vector<int> type
 	std::reverse(nnull_flag.begin(), nnull_flag.end());
 
 
-
+	//TODO: primary index should be made;
 	string ret_string;
 	if (table_name.size() > 20) {
 		ret_string += "ERROR : Table name should be less than 20 \n";
@@ -628,33 +636,47 @@ string API::create(string table_name, vector<string> name_list, vector<int> type
 
 string API::create_index(string table_name, string index_name, vector<string> col_list) {
 	// TODO: API create_index
-	// bool CM.have_table(table_name);
-	// bool CM.have_index(table_name, index_name);
-	// bool CM.have_column(col_list);
-	// bool CM.create_table(table_name, name_list, type_list, length_list, primary_flag, unique_flag, nnull_flag);
-	// string > out_string
 	string ret_string;
-	ret_string += "Query OK, 0 rows affected (0.03 sec)\n";
-	return ret_string;
-}
+	if (col_list.size() != 1) {
+		ret_string += "ERROR: can only create index for one col at a time!\n";
+		return ret_string;
+	}
 
-string API::drop_table(string table_name) {
-	string ret_string;
-	// TODO: API drop_table
-	// bool CM.have_table(table_name);
-	// bool IM.drop_table(table_name);
-	// bool RM.drop_table(table_name);
-	// string > out_string
 	if (CM.have_table(table_name)) {
-		CM.drop_table(table_name);
-		//IM.drop_table();
-		//RM.drop_table();
-		ret_string += "Query OK, 0 rows affected (0.01 sec)\n";
+		
+		//std::string real_index_name = index_name + "_index_" + col_list[0];
+		if (!CM.have_index(table_name, index_name)) {
+			//TODO: get keys from RecordManger
+			
+			//IM.create_index(index_name, table_name, col_list[0], keys);
+			ret_string += "create index : needs melody's help";
+		} else {
+			ret_string += "Error: have same index name '" + index_name + "'";
+		}
+
+		ret_string += "Query OK, 0 rows affected (0.03 sec)\n";
 	} else {
 		ret_string += "Error: have no such table\n";
 	}
 	
-	
+
+	return ret_string;
+}
+
+string API::drop_table(string table_name) {
+	// TODO: API drop_table
+	string ret_string;
+	if (CM.have_table(table_name)) {
+		CM.drop_table(table_name);
+		IM.drop_table(table_name);
+		RM.dropTable(table_name);
+		//RM.drop_table();
+		// TODO: RM drop table
+		//TODO: fix 0 rows
+		ret_string += "Query OK, 0 rows affected (0.01 sec)\n";
+	} else {
+		ret_string += "Error: have no such table\n";
+	}
 	return ret_string;
 }
 
@@ -664,10 +686,21 @@ string API::drop_index(string table_name, string index_name) {
 	// bool CM.have_index(table_name, index_name);
 	// bool IM.drop_index(index_name);
 	// string > out_string
+	string ret_string;
+	if (CM.have_table(table_name)) {
+		if (CM.have_index(table_name, index_name)) {
+			CM
+			IM.drop_index(index_name);
+			ret_string += "Query OK, 0 rows affected (0.01 sec)\n";
+		} else {
+			ret_string += "ERROR: have no such index\n";
+		}
+	} else {
+		ret_string += "ERROR: have no such table\n";
+	}
 
 	// notice that IM should be called first, delete indices then delete table catalog
-	string ret_string;
-	ret_string += "Query OK, 0 rows affected (0.01 sec)\n";
+	
 	return ret_string;
 }
 
