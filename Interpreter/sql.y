@@ -66,7 +66,7 @@ void emit(char *s, ...);
 %type <intval> column_list create_col_list column_atts
 %type <intval> insert_stmt insert_vals_list insert_vals
 %type <intval> update_stmt update_asgn_list
-%type <intval> drop_stmt index_expr_list exec_stmt
+%type <intval> drop_stmt index_expr_list exec_stmt type_expr
 %start stmt_list
 
 %%
@@ -95,8 +95,8 @@ delete_stmt: DELETE FROM NAME opt_where { emit("DELETE TABLE %s", $3); free($3);
    insert_vals_list: '(' insert_vals ')' { emit("VALUES %d", $2); $$ = 1; }
 
    insert_vals:
-     expr { $$ = 1; }
-   | insert_vals ',' expr { $$ = $1 + 1; }
+     type_expr { $$ = 1; }
+   | insert_vals ',' type_expr { $$ = $1 + 1; }
     ;
 
 /* UPDATE */
@@ -108,7 +108,7 @@ update_stmt: UPDATE NAME SET update_asgn_list opt_where { emit("UPDATE TABLE %s"
     ;
 
 update_asgn_list:
-    NAME COMPARISON update_expr { emit("ASSIGN %s", $1); free($1); $$ = 1; }
+    NAME COMPARISON type_expr { emit("ASSIGN %s", $1); free($1); $$ = 1; }
     ;
 
 /* CREATE */
@@ -175,7 +175,7 @@ select_expr_list:
     | '*' { emit("81 *"); $$ = 1; }
     ;
 select_expr: 
-    expr
+    type_expr
     ;
 opt_where:
     | WHERE expr { emit("WHERE"); }
@@ -220,10 +220,10 @@ exit_stmt: EXIT { emit("EXIT"); }
 /* EXPR */
 
 expr: 
-    expr BETWEEN expr AND expr %prec BETWEEN { emit("BETWEEN"); }
+    type_expr BETWEEN type_expr AND type_expr %prec BETWEEN { emit("BETWEEN"); }
     ;
 
-expr: 
+type_expr: 
     NAME          { emit("81 %s", $1); free($1); }
     | STRING        { emit("82 %s", $1); free($1); }
     | INTNUM        { emit("83 %d", $1); }
@@ -232,16 +232,9 @@ expr:
 
 expr: 
     expr ANDOP expr { emit("AND"); }
-    | expr COMPARISON expr { emit("CMP %d", $2); }
+    | type_expr COMPARISON type_expr { emit("CMP %d", $2); }
     ;
 
-
-update_expr:
-    NAME          { emit("81 %s", $1); free($1); }
-    | STRING        { emit("82 %s", $1); free($1); }
-    | INTNUM        { emit("83 %d", $1); }
-    | FLOAT     { emit("84 %g", $1); }
-    ;
 %%
 
 char sql_from_bison[1000];
