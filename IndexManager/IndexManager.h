@@ -395,7 +395,8 @@ private:
 		return _real_record_ptrs[table_name];
 	}
 
-	IndexManager(std::string fileName) {
+	IndexManager(std::string fileName) :
+	_fileName(fileName){
 		if (BufferManager::Instance().createFile(fileName)) {
 
 		} else {

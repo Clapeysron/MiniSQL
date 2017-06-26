@@ -34,211 +34,196 @@ string API::exec() {
 	//    return "abc";
 	sql_stream >> buf; // STMT
 	sql_stream >> buf; // SELECT INSERT
-    if (buf == "SELECT") {
-        int select_list_num;
-        sql_stream >> select_list_num; // LISTNUM
-        
-        string table_name;
-        sql_stream >> buf; // TABLE
-        sql_stream >> table_name;
-        
-        sql_stream >> buf; // WHERE or 81
-        if (buf == "81") {
-            vector<string> col_list;
-            for (int i = 0; i < select_list_num; i++) {
-                sql_stream >> buf; // NAME
-                sql_stream >> buf; // colname
-                col_list.push_back(buf);
-            }
-            ret_string = select_all(table_name, col_list);
-            return ret_string;
-        }
-        else if (buf == "WHERE")
-        {
-            while (buf != "81")
-            {
-                sql_stream >> buf;
-                vector<vector<int>> indexs_list;
-                if (buf == "AND")
-                {
-                    sql_stream >> buf;
-                    if (buf == "CMP")
-                    {
-                        int comparison_type, type_1, type_2;
-                        string comp_1, comp_2;
-                        sql_stream >> comparison_type >> type_1 >> comp_1 >> type_2 >> comp_2;
-                        indexs_list.push_back(search_where(table_name, comparison_type, type_1, comp_1, type_2, comp_2));
-                        continue;
-                    }
-                    else if (buf == "BETWEEN")
-                    {
-                        int type_1, type_2, type_3;
-                        string comp, between_1, between_2;
-                        sql_stream >> type_1 >> between_1 >> type_2 >> between_2 >> type_3 >> comp;
-                        indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
-                        continue;
-                    }
-                }
-                else if (buf == "CMP")
-                {
-                    int comparison_type, type_1, type_2;
-                    string comp_1, comp_2;
-                    sql_stream >> comparison_type >> type_1 >> comp_1 >> type_2 >> comp_2;
-                    indexs_list.push_back(search_where(table_name, comparison_type, type_1, comp_1, type_2, comp_2));
-                }
-                else if (buf == "BETWEEN")
-                {
-                    int type_1, type_2, type_3;
-                    string comp, between_1, between_2;
-                    sql_stream >> type_1 >> between_1 >> type_2 >> between_2 >> type_3 >> comp;
-                    indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
-                }
-                vector<string> col_list;
-                for (int i = 0; i < select_list_num; i++)
-                {
-                    sql_stream >> buf; // NAME
-                    sql_stream >> buf; // colname
-                    col_list.push_back(buf);
-                }
-                ret_indexs=indexs_list[0];
-                for (int i=0; i<indexs_list.size(); i++)
-                {
-                    ret_indexs = and_indexs(ret_indexs, indexs_list[i]);
-                }
-                ret_string = select(table_name, col_list, ret_indexs);
-                return ret_string;
-            }
-        }
-    } else if (buf == "INSERT") {
-        string table_name;
-        sql_stream >> table_name;
-        
-        sql_stream >> buf; // VALUES
-        int insert_list_num;
-        sql_stream >> insert_list_num; // LISTNUM
-        
-        vector<int> type_list;
-        vector<string> value_list;
-        for (int i = 0; i < insert_list_num; i++) {
-            int temp_type;
-            string temp_value;
-            sql_stream >> temp_type;
-            sql_stream >> temp_value;
-            type_list.push_back(temp_type);
-            value_list.push_back(temp_value);
-        }
-        ret_string = insert(table_name, type_list, value_list);
-        return ret_string;
-    } else if (buf == "UPDATE") {
-        sql_stream >> buf; // TABLE
-        string table_name;
-        sql_stream >> table_name;
-        sql_stream >> buf;
-        if (buf == "ASSIGN") {
-            string col_name;
-            int update_type;
-            string update_value;
-            sql_stream >> col_name;
-            sql_stream >> update_type;
-            sql_stream >> update_value;
-            ret_string = update_all(table_name, col_name, update_type, update_value);
-            return ret_string;
-        } else if (buf == "WHERE") {
-            while (buf != "ASSIGN") {
-                vector<vector<int>> indexs_list;
-                sql_stream >> buf;
-                if (buf == "AND") {
-                    sql_stream >> buf;
-                    if (buf == "CMP") {
-                        int comparison_type, type_1, type_2;
-                        string comp_1, comp_2;
-                        sql_stream >> comparison_type >> type_1 >> comp_1 >> type_2 >> comp_2;
-                        indexs_list.push_back(search_where(table_name, comparison_type, type_1, comp_1, type_2, comp_2));
-                        continue;
-                    } else if (buf == "BETWEEN") {
-                        int type_1, type_2, type_3;
-                        string comp, between_1, between_2;
-                        sql_stream >> type_1 >> between_1 >> type_2 >> between_2 >> type_3 >> comp;
-                        indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
-                        continue;
-                    }
-                } else if (buf == "CMP") {
-                    int comparison_type, type_1, type_2;
-                    string comp_1, comp_2;
-                    sql_stream >> comparison_type >> type_1 >> comp_1 >> type_2 >> comp_2;
-                    indexs_list.push_back(search_where(table_name, comparison_type, type_1, comp_1, type_2, comp_2));
-                } else if (buf == "BETWEEN") {
-                    int type_1, type_2, type_3;
-                    string comp, between_1, between_2;
-                    sql_stream >> type_1 >> between_1 >> type_2 >> between_2 >> type_3 >> comp;
-                    indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
-                }
-                sql_stream >> buf; // ASSIGN
-                string col_name;
-                int update_type;
-                string update_value;
-                sql_stream >> col_name;
-                sql_stream >> update_type;
-                sql_stream >> update_value;
-                
-                ret_indexs=indexs_list[0];
-                for (int i=0; i<indexs_list.size(); i++)
-                {
-                    ret_indexs = and_indexs(ret_indexs, indexs_list[i]);
-                }
-                ret_string = update_part(table_name, col_name, update_type, update_value, ret_indexs);
-                return ret_string;
-            }
-        }
-    } else if (buf == "DELETE") {
-        string table_name;
-        sql_stream >> buf; // TABLE
-        sql_stream >> table_name;
-        
-        sql_stream >> buf; // WHERE or $
-        if (buf == "$") {
-            ret_string = delete_all(table_name);
-            return ret_string;
-        } else if (buf == "WHERE") {
-            while (buf != "$") {
-                vector<vector<int>> indexs_list;
-                sql_stream >> buf;
-                if (buf == "AND") {
-                    sql_stream >> buf;
-                    if (buf == "CMP") {
-                        int comparison_type, type_1, type_2;
-                        string comp_1, comp_2;
-                        sql_stream >> comparison_type >> type_1 >> comp_1 >> type_2 >> comp_2;
-                        indexs_list.push_back(search_where(table_name, comparison_type, type_1, comp_1, type_2, comp_2));
-                        continue;
-                    } else if (buf == "BETWEEN") {
-                        int type_1, type_2, type_3;
-                        string comp, between_1, between_2;
-                        sql_stream >> type_1 >> between_1 >> type_2 >> between_2 >> type_3 >> comp;
-                        indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
-                        continue;
-                    }
-                } else if (buf == "CMP") {
-                    int comparison_type, type_1, type_2;
-                    string comp_1, comp_2;
-                    sql_stream >> comparison_type >> type_1 >> comp_1 >> type_2 >> comp_2;
-                    indexs_list.push_back(search_where(table_name, comparison_type, type_1, comp_1, type_2, comp_2));
-                } else if (buf == "BETWEEN") {
-                    int type_1, type_2, type_3;
-                    string comp, between_1, between_2;
-                    sql_stream >> type_1 >> between_1 >> type_2 >> between_2 >> type_3 >> comp;
-                    indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
-                }
-                ret_indexs=indexs_list[0];
-                for (int i=0; i<indexs_list.size(); i++)
-                {
-                    ret_indexs = and_indexs(ret_indexs, indexs_list[i]);
-                }
-                ret_string = delete_part(table_name, ret_indexs);
-                return ret_string;
-            }
-        }
-    else if (buf == "CREATEINDEX") {
+	if (buf == "SELECT") {
+		int select_list_num;
+		sql_stream >> select_list_num; // LISTNUM
+
+		string table_name;
+		sql_stream >> buf; // TABLE
+		sql_stream >> table_name;
+
+		sql_stream >> buf; // WHERE or 81
+		if (buf == "81") {
+			vector<string> col_list;
+			for (int i = 0; i < select_list_num; i++) {
+				sql_stream >> buf; // NAME
+				sql_stream >> buf; // colname
+				col_list.push_back(buf);
+			}
+			ret_string = select_all(table_name, col_list);
+			return ret_string;
+		} else if (buf == "WHERE") {
+			while (buf != "81") {
+				sql_stream >> buf;
+				vector<vector<int>> indexs_list;
+				if (buf == "AND") {
+					sql_stream >> buf;
+					if (buf == "CMP") {
+						int comparison_type, type_1, type_2;
+						string comp_1, comp_2;
+						sql_stream >> comparison_type >> type_1 >> comp_1 >> type_2 >> comp_2;
+						indexs_list.push_back(search_where(table_name, comparison_type, type_1, comp_1, type_2, comp_2));
+						continue;
+					} else if (buf == "BETWEEN") {
+						int type_1, type_2, type_3;
+						string comp, between_1, between_2;
+						sql_stream >> type_1 >> between_1 >> type_2 >> between_2 >> type_3 >> comp;
+						indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
+						continue;
+					}
+				} else if (buf == "CMP") {
+					int comparison_type, type_1, type_2;
+					string comp_1, comp_2;
+					sql_stream >> comparison_type >> type_1 >> comp_1 >> type_2 >> comp_2;
+					indexs_list.push_back(search_where(table_name, comparison_type, type_1, comp_1, type_2, comp_2));
+				} else if (buf == "BETWEEN") {
+					int type_1, type_2, type_3;
+					string comp, between_1, between_2;
+					sql_stream >> type_1 >> between_1 >> type_2 >> between_2 >> type_3 >> comp;
+					indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
+				}
+				vector<string> col_list;
+				for (int i = 0; i < select_list_num; i++) {
+					sql_stream >> buf; // NAME
+					sql_stream >> buf; // colname
+					col_list.push_back(buf);
+				}
+				ret_indexs = indexs_list[0];
+				for (int i = 0; i < indexs_list.size(); i++) {
+					ret_indexs = and_indexs(ret_indexs, indexs_list[i]);
+				}
+				ret_string = select(table_name, col_list, ret_indexs);
+				return ret_string;
+			}
+		}
+	} else if (buf == "INSERT") {
+		string table_name;
+		sql_stream >> table_name;
+
+		sql_stream >> buf; // VALUES
+		int insert_list_num;
+		sql_stream >> insert_list_num; // LISTNUM
+
+		vector<int> type_list;
+		vector<string> value_list;
+		for (int i = 0; i < insert_list_num; i++) {
+			int temp_type;
+			string temp_value;
+			sql_stream >> temp_type;
+			sql_stream >> temp_value;
+			type_list.push_back(temp_type);
+			value_list.push_back(temp_value);
+		}
+		ret_string = insert(table_name, type_list, value_list);
+		return ret_string;
+	} else if (buf == "UPDATE") {
+		sql_stream >> buf; // TABLE
+		string table_name;
+		sql_stream >> table_name;
+		sql_stream >> buf;
+		if (buf == "ASSIGN") {
+			string col_name;
+			int update_type;
+			string update_value;
+			sql_stream >> col_name;
+			sql_stream >> update_type;
+			sql_stream >> update_value;
+			ret_string = update_all(table_name, col_name, update_type, update_value);
+			return ret_string;
+		} else if (buf == "WHERE") {
+			while (buf != "ASSIGN") {
+				vector<vector<int>> indexs_list;
+				sql_stream >> buf;
+				if (buf == "AND") {
+					sql_stream >> buf;
+					if (buf == "CMP") {
+						int comparison_type, type_1, type_2;
+						string comp_1, comp_2;
+						sql_stream >> comparison_type >> type_1 >> comp_1 >> type_2 >> comp_2;
+						indexs_list.push_back(search_where(table_name, comparison_type, type_1, comp_1, type_2, comp_2));
+						continue;
+					} else if (buf == "BETWEEN") {
+						int type_1, type_2, type_3;
+						string comp, between_1, between_2;
+						sql_stream >> type_1 >> between_1 >> type_2 >> between_2 >> type_3 >> comp;
+						indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
+						continue;
+					}
+				} else if (buf == "CMP") {
+					int comparison_type, type_1, type_2;
+					string comp_1, comp_2;
+					sql_stream >> comparison_type >> type_1 >> comp_1 >> type_2 >> comp_2;
+					indexs_list.push_back(search_where(table_name, comparison_type, type_1, comp_1, type_2, comp_2));
+				} else if (buf == "BETWEEN") {
+					int type_1, type_2, type_3;
+					string comp, between_1, between_2;
+					sql_stream >> type_1 >> between_1 >> type_2 >> between_2 >> type_3 >> comp;
+					indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
+				}
+				sql_stream >> buf; // ASSIGN
+				string col_name;
+				int update_type;
+				string update_value;
+				sql_stream >> col_name;
+				sql_stream >> update_type;
+				sql_stream >> update_value;
+
+				ret_indexs = indexs_list[0];
+				for (int i = 0; i < indexs_list.size(); i++) {
+					ret_indexs = and_indexs(ret_indexs, indexs_list[i]);
+				}
+				ret_string = update_part(table_name, col_name, update_type, update_value, ret_indexs);
+				return ret_string;
+			}
+		}
+	} else if (buf == "DELETE") {
+		string table_name;
+		sql_stream >> buf; // TABLE
+		sql_stream >> table_name;
+
+		sql_stream >> buf; // WHERE or $
+		if (buf == "$") {
+			ret_string = delete_all(table_name);
+			return ret_string;
+		} else if (buf == "WHERE") {
+			while (buf != "$") {
+				vector<vector<int>> indexs_list;
+				sql_stream >> buf;
+				if (buf == "AND") {
+					sql_stream >> buf;
+					if (buf == "CMP") {
+						int comparison_type, type_1, type_2;
+						string comp_1, comp_2;
+						sql_stream >> comparison_type >> type_1 >> comp_1 >> type_2 >> comp_2;
+						indexs_list.push_back(search_where(table_name, comparison_type, type_1, comp_1, type_2, comp_2));
+						continue;
+					} else if (buf == "BETWEEN") {
+						int type_1, type_2, type_3;
+						string comp, between_1, between_2;
+						sql_stream >> type_1 >> between_1 >> type_2 >> between_2 >> type_3 >> comp;
+						indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
+						continue;
+					}
+				} else if (buf == "CMP") {
+					int comparison_type, type_1, type_2;
+					string comp_1, comp_2;
+					sql_stream >> comparison_type >> type_1 >> comp_1 >> type_2 >> comp_2;
+					indexs_list.push_back(search_where(table_name, comparison_type, type_1, comp_1, type_2, comp_2));
+				} else if (buf == "BETWEEN") {
+					int type_1, type_2, type_3;
+					string comp, between_1, between_2;
+					sql_stream >> type_1 >> between_1 >> type_2 >> between_2 >> type_3 >> comp;
+					indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
+				}
+				ret_indexs = indexs_list[0];
+				for (int i = 0; i < indexs_list.size(); i++) {
+					ret_indexs = and_indexs(ret_indexs, indexs_list[i]);
+				}
+				ret_string = delete_part(table_name, ret_indexs);
+				return ret_string;
+			}
+		}
+	} else if (buf == "CREATEINDEX") {
 		string index_name;
 		sql_stream >> index_name;
 		string table_name;
@@ -451,12 +436,13 @@ vector<int> API::search_between(string table_name, int type_1, string comp, int 
 
 
 
-vector<int> API::search_where(string table_name, int comparison_type, int type_1, string comp_1, int type_2, string comp_2) {
+vector<int> API::search_where(string table_name, int comparison_type, int type_2, string comp_2, int type_1, string comp_1) {
+	//std::string function_name = "search_where";
 	vector<int> ret_indexs;
 	// TODO: API search_where
 	//std::vector<int> result;
 	if (!CM.have_table(table_name)) {
-		std::cerr << "no such table" << std::endl;
+		std::cerr << " no such table" << std::endl;
 		ret_indexs.push_back(-1); // -1 for no result
 		return ret_indexs;
 	} else {
@@ -501,7 +487,7 @@ vector<int> API::search_where(string table_name, int comparison_type, int type_1
 						}
 
 						default:
-							std::cerr << "no such type_2" << std::endl;
+							std::cout << "no such type_2" << std::endl;
 							ret_indexs.push_back(-3); // -1 for no result
 							return ret_indexs;
 						}
@@ -518,7 +504,7 @@ vector<int> API::search_where(string table_name, int comparison_type, int type_1
 			}
 		} else {
 			//TODO: to implement 3=3, 3=a
-			std::cout << "no such table" << std::endl;
+			std::cout << "The first Comparator is not a column" << std::endl;
 			ret_indexs.push_back(-1); // -1 for no type
 			return ret_indexs;
 		}
@@ -674,11 +660,11 @@ string API::create_index(string table_name, string index_name, vector<string> co
 	}
 
 	if (CM.have_table(table_name)) {
-		
+
 		//std::string real_index_name = index_name + "_index_" + col_list[0];
 		if (!CM.have_index(table_name, index_name)) {
 			//TODO: get keys from RecordManger
-			
+
 			//IM.create_index(index_name, table_name, col_list[0], keys);
 			ret_string += "create index : needs melody's help";
 		} else {
@@ -689,7 +675,7 @@ string API::create_index(string table_name, string index_name, vector<string> co
 	} else {
 		ret_string += "Error: have no such table\n";
 	}
-	
+
 
 	return ret_string;
 }
@@ -713,10 +699,10 @@ string API::drop_table(string table_name) {
 
 string API::drop_index(string table_name, string index_name) {
 	// TODO: API drop_index
-	
+
 	string ret_string;
 	if (CM.have_table(table_name)) {
-		
+
 		if (CM.have_index_with_index_name(table_name, index_name)) {
 			Type t = CM.drop_index_with_index_name(table_name, index_name);
 			IM.drop_index(t, index_name);
