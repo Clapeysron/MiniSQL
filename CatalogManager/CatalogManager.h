@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 #include <utility>
-#include "..\IndexManager\TypeInfo.h"
+#include "../IndexManager/TypeInfo.h"
 //#include "..\BufferManager\BufferManager.h"
 //#include "..\RecordManager\RecordManager.h"
 #include <iostream>
