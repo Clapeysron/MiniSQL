@@ -23,6 +23,8 @@ private:
     ifstream::pos_type getFileSize(string filename); // Get the size of one file.
     bool buildBuffer(string filename); // Build a buffer on a file.
     bool destroyBuffer(string filename); // Destroy the specific file's buffer.
+	BufferManager(int blockSize, int bufferSize); // Constructor
+	~BufferManager(); // Destructor
 
 public:
     bool createFile(string filename); // Create a file.
@@ -32,10 +34,16 @@ public:
     bool writeDataToFile(string filename, int blockIndex, char *writeBuffer); // Write the data to the specific blockIndex to the file from the memory.
     bool lockBlock(string filename, int blockIndex, int lock); // lockBlockck or Unlock the Block in the specific file.
     bool deleteLastBlockOfFile(string filename);
-    BufferManager(int blockSize , int bufferSize); // Constructor
-    ~BufferManager(); // Destructor
+    
+	static BufferManager& Instance() {
+		static BufferManager theSingleton(4096, 256);
+		return theSingleton;
+	}
 
-	int getNewBlockNum(string filename);
+	int getNewBlockNum(string filename) {
+		return 0;
+		// to be fixed by melody
+	}
 	//some api wanted by dfz
 	int getBlockSize() {
 		return blockSize;

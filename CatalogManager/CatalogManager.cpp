@@ -4,7 +4,7 @@
 #include "../BufferManager/BufferManager.h"
 
 
-BufferManager CatalogManager::BM = BufferManager(4096, 256);
+//BufferManager CatalogManager::BM = BufferManager(4096, 256);`
 
 TableInfo::TableInfo(const std::vector<FieldInfo>& fields, const std::string & name, const size_t & primary) :
 	_fields(fields),
@@ -119,12 +119,12 @@ const std::pair<Type, std::string>& TableInfo::get_primary_index() {
 CatalogManager::CatalogManager(std::string fileName) :
 	_fileName(fileName) {
 	std::vector<char*> allBlocks;
-	if (BM.createFile(fileName)) {
+	if (BufferManager::Instance().createFile(fileName)) {
 
 	} else {
-		BM.readDatas(fileName, allBlocks);
+		BufferManager::Instance().readDatas(fileName, allBlocks);
 		for (size_t i = 0; i < allBlocks.size(); i++) {
-			CharInStream cis(allBlocks[i], BM.getBlockSize());
+			CharInStream cis(allBlocks[i], BufferManager::Instance().getBlockSize());
 
 			std::string table_name;
 
@@ -141,10 +141,10 @@ CatalogManager::CatalogManager(std::string fileName) :
 CatalogManager::~CatalogManager() {
 	size_t block_index = 0;
 	for (auto i = _tables.cbegin(); i != _tables.cend(); i++) {
-		char* buff = new char[BM.getBlockSize()];
-		CharOutStream couts(buff, BM.getBlockSize());
+		char* buff = new char[BufferManager::Instance().getBlockSize()];
+		CharOutStream couts(buff, BufferManager::Instance().getBlockSize());
 		i->second.serialize(couts);
-		BM.writeDataToFile(_fileName, block_index, buff);
+		BufferManager::Instance().writeDataToFile(_fileName, block_index, buff);
 		delete[] buff;
 		block_index++;
 	}

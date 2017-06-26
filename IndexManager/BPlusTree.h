@@ -6,11 +6,11 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <deque>
 #include "IndexManager.h"
-#include "../CatalogManager/CharStream.h"
+#include "../BufferManager/BufferManager.h"
 
 
+const std::string _fileName = "BPlusTree";
 
 template<typename T>
 class BPTNode {
@@ -69,9 +69,9 @@ public:
 	BPTNode(block_ptr blockNum) :
 		_blockNumber(blockNum),
 		_changed(false) {
-		int blockSize = IndexManager::BM.getBlockSize();
+		int blockSize = BufferManager::Instance().getBlockSize();
 		char* block = new char[blockSize];
-		IndexManager::BM.readDataFromFile(IndexManager::bplustree_filename, blockNum, block);
+		BufferManager::Instance().readDataFromFile(_fileName, blockNum, block);
 		CharInStream cis(block, blockSize);
 		cis >> _degree >> _is_root >> _isLeaf >> _father;
 		size_t keys_num;
@@ -114,7 +114,7 @@ public:
 	~BPTNode() {
 		if (_changed) {
 			//_changed = false;
-			int blockSize = IndexManager::BM.getBlockSize();
+			int blockSize = BufferManager::Instance().getBlockSize();
 			char* block = new char[blockSize];
 			CharOutStream charouts(block, blockSize);
 			charouts << _degree << _is_root << _isLeaf << _father;
@@ -134,7 +134,7 @@ public:
 					charouts << (*i);
 				}
 			}
-			IndexManager::BM.writeDataToFile(IndexManager::bplustree_filename, _blockNumber, block);
+			BufferManager::Instance().writeDataToFile(_fileName, _blockNumber, block);
 
 		}
 	}
@@ -282,14 +282,14 @@ public:
 			_records.erase(ptr_it, _records.end());
 			//second_ptrs.splice(second_ptrs.begin(), _recordPtrs, ptr_it, _recordPtrs.end());
 
-			block_ptr second_block_num = IndexManager::BM.getNewBlockNum(IndexManager::bplustree_filename);
+			block_ptr second_block_num = BufferManager::Instance().getNewBlockNum(_fileName);
 
 			BPTNode<T> second(second_keys, _degree, _father, second_block_num, _next, true, second_ptrs);
 
 			_next = second_block_num;
 			if (this->is_root()) {
 				set_root(false);
-				block_ptr new_block_num = IndexManager::BM.getNewBlockNum(IndexManager::bplustree_filename);
+				block_ptr new_block_num = BufferManager::Instance().getNewBlockNum(_fileName);
 				BPTNode<T> newRoot(_degree, new_block_num);
 				newRoot.set_root(true);
 				newRoot.insert_key_children(up_key, second_block_num);
@@ -325,7 +325,7 @@ public:
 
 
 			// new a block
-			block_ptr second_block_num = IndexManager::BM.getNewBlockNum(IndexManager::bplustree_filename);
+			block_ptr second_block_num = BufferManager::Instance().getNewBlockNum(_fileName);
 			BPTNode<T> second(second_keys, _degree, _father, second_block_num, _next, false, second_children);
 
 
@@ -335,7 +335,7 @@ public:
 			}
 			if (this->is_root()) {
 				set_root(false);
-				block_ptr new_block_num = IndexManager::BM.getNewBlockNum(IndexManager::bplustree_filename);
+				block_ptr new_block_num = BufferManager::Instance().getNewBlockNum(_fileName);
 				BPTNode<T> newRoot(_degree, new_block_num);
 				newRoot.set_root(true);
 				newRoot.insert_key_children(up_key, second_block_num);
@@ -430,21 +430,21 @@ public:
 
 	BPlusTree(size_t key_size) :
 		key_size(key_size),
-		_degree((IndexManager::BM.getBlockSize()
+		_degree((BufferManager::Instance().getBlockSize()
 			- sizeof(size_t)
 			- sizeof(bool)
 			- sizeof(bool)
 			- sizeof(block_ptr)
 			- sizeof(size_t))
 			/ (key_size + sizeof(int))),
-		_root_block_num(IndexManager::BM.getNewBlockNum(IndexManager::bplustree_filename)) {
+		_root_block_num(BufferManager::Instance().getNewBlockNum(_fileName)) {
 		BPTNode<T> root(_root_block_num);
 		root.set_root(true);
 	}
 
 	BPlusTree(size_t key_size, block_ptr root_block_num) :
 		key_size(key_size),
-		_degree((IndexManager::BM.getBlockSize()
+		_degree((BufferManager::Instance().getBlockSize()
 			- sizeof(size_t)
 			- sizeof(bool)
 			- sizeof(bool)
@@ -484,7 +484,7 @@ public:
 	}
 
 	static BPlusTree<T> create(const std::vector<std::pair<T, record_ptr>>& entities, size_t key_size) {
-		size_t degree = (IndexManager::BM.getBlockSize()
+		size_t degree = (BufferManager::Instance().getBlockSize()
 			- sizeof(size_t)
 			- sizeof(bool)
 			- sizeof(bool)
@@ -494,7 +494,7 @@ public:
 
 		auto i = entities.begin();
 
-		int root_block_num = IndexManager::BM.getNewBlockNum(IndexManager::bplustree_filename);
+		int root_block_num = BufferManager::Instance().getNewBlockNum(_fileName);
 		BPTNode<T> root(root_block_num);
 
 		//std::unique_ptr<BPTNode<T>>  father = &root;
@@ -511,7 +511,7 @@ public:
 			}
 			i = j;
 			//std::vector<key_type> keys, size_t degree, block_ptr father, block_ptr blockNumber, block_ptr next, bool isLeaf, std::vector<int> pointers;
-			int new_block_num = IndexManager::BM.getNewBlockNum();
+			int new_block_num = BufferManager::Instance().getNewBlockNum();
 			BPTNode<T> node = new BPTNode<T>(std::move(keys),
 				degree,
 				father_num,

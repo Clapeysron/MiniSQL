@@ -88,171 +88,15 @@ class IndexManager {
 
 	using record_ptr = int;
 public:
-	IndexManager(std::string fileName) {
-		if (BM.createFile(fileName)) {
-
-		} else {
-			size_t indexSize = 3 * name_length_max + 20 + sizeof(Type);
-
-			std::vector<char*> allBlocks;
-			BM.readDatas(_fileName, allBlocks);
-			size_t int_index_num;
-			size_t float_index_num;
-			size_t string_index_num;
-			size_t block_count = 0;
-			size_t block_size = BM.getBlockSize();
-			while (block_count != allBlocks.size()) {
-				CharInStream cis(allBlocks[block_count], block_size);
-				cis >> int_index_num >> float_index_num >> string_index_num;
-
-				for (size_t i = 0; i < int_index_num; i++) {
-					if (cis.remain() > indexSize) {
-						Index<int> temp = Index<int>::deserialize(cis);
-						_intIndex.emplace(temp.getName(), temp);
-					} else {
-						block_count++;
-						cis = CharInStream(allBlocks[block_count], block_size);
-						Index<int> temp = Index<int>::deserialize(cis);
-						_intIndex.emplace(temp.getName(), temp);
-					}
-				}
-
-				for (size_t i = 0; i < float_index_num; i++) {
-					if (cis.remain() > indexSize) {
-						Index<float> temp = Index<float>::deserialize(cis);
-						_floatIndex.emplace(temp.getName(), temp);
-					} else {
-						block_count++;
-						cis = CharInStream(allBlocks[block_count], block_size);
-						Index<float> temp = Index<float>::deserialize(cis);
-						_floatIndex.emplace(temp.getName(), temp);
-					}
-				}
-
-				for (size_t i = 0; i < string_index_num; i++) {
-					if (cis.remain() > indexSize) {
-						Index<std::string> temp = Index<std::string>::deserialize(cis);
-						_stringIndex.emplace(temp.getName(), temp);
-					} else {
-						block_count++;
-						cis = CharInStream(allBlocks[block_count], block_size);
-						Index<std::string> temp = Index<std::string>::deserialize(cis);
-						_stringIndex.emplace(temp.getName(), temp);
-					}
-				}
-
-				block_count++;
-				size_t real_records_num;
-				cis >> real_records_num;
-
-				for (size_t i = 0; i < real_records_num; i++) {
-					size_t record_amount;
-					std::string table_name;
-					cis >> table_name >> record_amount;
-					std::vector<record_ptr> real_records;
-					for (size_t i = 0; i < record_amount; i++) {
-						if (cis.remain() > sizeof(record_ptr)) {
-							record_ptr temp;
-							cis >> temp;
-							real_records.push_back(temp);
-						} else {
-							block_count++;
-							cis = CharInStream(allBlocks[block_count], block_size);
-							record_ptr temp;
-							cis >> temp;
-							real_records.push_back(temp);
-						}
-
-					}
-					_real_record_ptrs.emplace(table_name, real_records);
-					block_count++;
-					cis = CharInStream(allBlocks[block_count], block_size);
-				}
-
-				for (size_t i = 0; i < allBlocks.size(); i++) {
-					delete[] allBlocks[i];
-				}
-			}
-
-		}
-	}
-
-
-	~IndexManager() {
-		size_t indexSize = 3 * name_length_max + 20 + sizeof(Type);
-
-		size_t block_index = 0;
-		size_t block_size = BM.getBlockSize();
-
-		size_t index_num_per_block = block_size / indexSize;
-		char* buff = new char[block_size];
-		CharOutStream couts(buff, block_size);
-		couts << _intIndex.size() << _floatIndex.size() << _stringIndex.size();
-		for (auto i = _intIndex.cbegin(); i != _intIndex.cend(); i++) {
-			if (couts.remain() > indexSize) {
-				i->second.serialize(couts);
-			} else {
-				BM.writeDataToFile(_fileName, block_index, buff);
-
-				block_index++;
-				couts.reset();
-				i->second.serialize(couts);
-			}
-		}
-
-
-
-		for (auto i = _floatIndex.cbegin(); i != _floatIndex.cend(); i++) {
-			if (couts.remain() > indexSize) {
-				i->second.serialize(couts);
-			} else {
-				BM.writeDataToFile(_fileName, block_index, buff);
-
-				block_index++;
-				couts.reset();
-				i->second.serialize(couts);
-			}
-		}
-
-		for (auto i = _stringIndex.cbegin(); i != _stringIndex.cend(); i++) {
-			if (couts.remain() > indexSize) {
-				i->second.serialize(couts);
-			} else {
-				BM.writeDataToFile(_fileName, block_index, buff);
-
-				block_index++;
-				couts.reset();
-				i->second.serialize(couts);
-			}
-		}
-
-		BM.writeDataToFile(_fileName, block_index, buff);
-		couts.reset();
-		block_index++;
-		couts << _real_record_ptrs.size();
-		for (auto i = _real_record_ptrs.cbegin(); i != _real_record_ptrs.cend(); i++) {
-			couts << i->first << i->second.size();
-			for (auto j = i->second.cbegin(); j != i->second.cend(); j++) {
-				if (couts.remain() > sizeof(*j)) {
-					couts << *j;
-				} else {
-					BM.writeDataToFile(_fileName, block_index, buff);
-					couts.reset();
-					block_index++;
-					couts << *j;
-				}
-			}
-			couts.reset();
-			block_index++;
-		}
-
-		BM.writeDataToFile(_fileName, block_index, buff);
-		delete[] buff;
+	
+	static IndexManager& Instance() {
+		static IndexManager theSingleton("Index");
+		return theSingleton;
 	}
 
 	template<typename T>
 	void create_index(const std::string& indexName, const std::string& tableName, const std::string& fieldName, const std::vector<T> keys) {
-		TypeInfo temp_type = CM.get_type(tableName, fieldName);
+		TypeInfo temp_type = CatalogManager::Instance().get_type(tableName, fieldName);
 		std::vector<std::pair<T, int>> entities;
 		entities.reserve(keys.size());
 		int i = 0;
@@ -310,14 +154,14 @@ public:
 	}
 
 	void drop_table_indices(const std::string& tableName) {
-		const std::vector<std::pair<Type, std::string>>& indices = CM.get_indices(tableName);
+		const std::vector<std::pair<Type, std::string>>& indices = CatalogManager::Instance().get_indices(tableName);
 		for (auto i = indices.cbegin(); i != indices.cend(); i++) {
 			drop_index((*i).first, (*i).second);
 		}
 	}
 
 	int  delete_all(std::string& tableName) {
-		std::vector<std::pair<Type, std::string>> index_names = CM.find_indices(tableName);
+		std::vector<std::pair<Type, std::string>> index_names = CatalogManager::Instance().find_indices(tableName);
 		for (auto i = index_names.begin(); i != index_names.end(); i++) {
 			switch ((*i).first) {
 			case Int:
@@ -341,7 +185,7 @@ public:
 	// return how many records
 
 	int delete_part(std::string& tableName, const std::vector<record_ptr>& indices) {
-		std::vector<std::pair<Type, std::string>> index_names = CM.find_indices(tableName);
+		std::vector<std::pair<Type, std::string>> index_names = CatalogManager::Instance().find_indices(tableName);
 		std::vector<record_ptr> real_ptrs = get_real_ptrs(tableName);
 		for (size_t i = 0; i < indices.size(); i++) {
 			real_ptrs[indices[i]] = -1;
@@ -359,7 +203,7 @@ public:
 		//TODO: I want to comfirm that _real_record_ptrs[i] = i or -1, only these two possible value, and record_list should be size()+1,+2,+3...
 
 		_real_record_ptrs.at(table_name).insert(_real_record_ptrs.at(table_name).end(), record_list.begin(), record_list.end());
-		std::pair<Type, std::string> indexName_type = CM.find_index(table_name, fieldName);
+		std::pair<Type, std::string> indexName_type = CatalogManager::Instance().find_index(table_name, fieldName);
 		if (indexName_type.first == Int) {
 			_intIndex.at(indexName_type.second).insert(keys, record_list);
 			return keys.size();
@@ -375,7 +219,7 @@ public:
 		//TODO: I want to comfirm that _real_record_ptrs[i] = i or -1, only these two possible value, and record_list should be size()+1,+2,+3...
 
 		_real_record_ptrs.at(table_name).insert(_real_record_ptrs.at(table_name).end(), record_list.begin(), record_list.end());
-		std::pair<Type, std::string> indexName_type = CM.find_index(table_name, fieldName);
+		std::pair<Type, std::string> indexName_type = CatalogManager::Instance().find_index(table_name, fieldName);
 		if (indexName_type.first == Float) {
 			_floatIndex.at(indexName_type.second).insert(keys, record_list);
 			return keys.size();
@@ -391,7 +235,7 @@ public:
 		//TODO: I want to comfirm that _real_record_ptrs[i] = i or -1, only these two possible value, and record_list should be size()+1,+2,+3...
 
 		_real_record_ptrs.at(table_name).insert(_real_record_ptrs.at(table_name).end(), record_list.begin(), record_list.end());
-		std::pair<Type, std::string> indexName_type = CM.find_index(table_name, fieldName);
+		std::pair<Type, std::string> indexName_type = CatalogManager::Instance().find_index(table_name, fieldName);
 		if (indexName_type.first == Chars) {
 			_stringIndex.at(indexName_type.second).insert(keys, record_list);
 			return keys.size();
@@ -511,9 +355,9 @@ private:
 	std::map<std::string, Index<float>> _floatIndex;
 	std::map<std::string, Index<std::string>> _stringIndex;
 	const std::string _fileName;
-	static BufferManager& BM;
-	static CatalogManager& CM;
-	static const std::string bplustree_filename;
+	
+	//static CatalogManager& CatalogManager::Instance();
+	//static const std::string bplustree_filename ;
 
 
 	std::vector<record_ptr> convert_to_real_ptrs(const std::string& table_name, std::vector<record_ptr>& fake_ptrs) {
@@ -529,6 +373,167 @@ private:
 		return _real_record_ptrs[table_name];
 	}
 
+	IndexManager(std::string fileName) {
+		if (BufferManager::Instance().createFile(fileName)) {
+
+		} else {
+			size_t indexSize = 3 * name_length_max + 20 + sizeof(Type);
+
+			std::vector<char*> allBlocks;
+			BufferManager::Instance().readDatas(_fileName, allBlocks);
+			size_t int_index_num;
+			size_t float_index_num;
+			size_t string_index_num;
+			size_t block_count = 0;
+			size_t block_size = BufferManager::Instance().getBlockSize();
+			while (block_count != allBlocks.size()) {
+				CharInStream cis(allBlocks[block_count], block_size);
+				cis >> int_index_num >> float_index_num >> string_index_num;
+
+				for (size_t i = 0; i < int_index_num; i++) {
+					if (cis.remain() > indexSize) {
+						Index<int> temp = Index<int>::deserialize(cis);
+						_intIndex.emplace(temp.getName(), temp);
+					} else {
+						block_count++;
+						cis = CharInStream(allBlocks[block_count], block_size);
+						Index<int> temp = Index<int>::deserialize(cis);
+						_intIndex.emplace(temp.getName(), temp);
+					}
+				}
+
+				for (size_t i = 0; i < float_index_num; i++) {
+					if (cis.remain() > indexSize) {
+						Index<float> temp = Index<float>::deserialize(cis);
+						_floatIndex.emplace(temp.getName(), temp);
+					} else {
+						block_count++;
+						cis = CharInStream(allBlocks[block_count], block_size);
+						Index<float> temp = Index<float>::deserialize(cis);
+						_floatIndex.emplace(temp.getName(), temp);
+					}
+				}
+
+				for (size_t i = 0; i < string_index_num; i++) {
+					if (cis.remain() > indexSize) {
+						Index<std::string> temp = Index<std::string>::deserialize(cis);
+						_stringIndex.emplace(temp.getName(), temp);
+					} else {
+						block_count++;
+						cis = CharInStream(allBlocks[block_count], block_size);
+						Index<std::string> temp = Index<std::string>::deserialize(cis);
+						_stringIndex.emplace(temp.getName(), temp);
+					}
+				}
+
+				block_count++;
+				size_t real_records_num;
+				cis >> real_records_num;
+
+				for (size_t i = 0; i < real_records_num; i++) {
+					size_t record_amount;
+					std::string table_name;
+					cis >> table_name >> record_amount;
+					std::vector<record_ptr> real_records;
+					for (size_t i = 0; i < record_amount; i++) {
+						if (cis.remain() > sizeof(record_ptr)) {
+							record_ptr temp;
+							cis >> temp;
+							real_records.push_back(temp);
+						} else {
+							block_count++;
+							cis = CharInStream(allBlocks[block_count], block_size);
+							record_ptr temp;
+							cis >> temp;
+							real_records.push_back(temp);
+						}
+
+					}
+					_real_record_ptrs.emplace(table_name, real_records);
+					block_count++;
+					cis = CharInStream(allBlocks[block_count], block_size);
+				}
+
+				for (size_t i = 0; i < allBlocks.size(); i++) {
+					delete[] allBlocks[i];
+				}
+			}
+
+		}
+	}
+
+
+	~IndexManager() {
+		size_t indexSize = 3 * name_length_max + 20 + sizeof(Type);
+
+		size_t block_index = 0;
+		size_t block_size = BufferManager::Instance().getBlockSize();
+
+		size_t index_num_per_block = block_size / indexSize;
+		char* buff = new char[block_size];
+		CharOutStream couts(buff, block_size);
+		couts << _intIndex.size() << _floatIndex.size() << _stringIndex.size();
+		for (auto i = _intIndex.cbegin(); i != _intIndex.cend(); i++) {
+			if (couts.remain() > indexSize) {
+				i->second.serialize(couts);
+			} else {
+				BufferManager::Instance().writeDataToFile(_fileName, block_index, buff);
+
+				block_index++;
+				couts.reset();
+				i->second.serialize(couts);
+			}
+		}
+
+
+
+		for (auto i = _floatIndex.cbegin(); i != _floatIndex.cend(); i++) {
+			if (couts.remain() > indexSize) {
+				i->second.serialize(couts);
+			} else {
+				BufferManager::Instance().writeDataToFile(_fileName, block_index, buff);
+
+				block_index++;
+				couts.reset();
+				i->second.serialize(couts);
+			}
+		}
+
+		for (auto i = _stringIndex.cbegin(); i != _stringIndex.cend(); i++) {
+			if (couts.remain() > indexSize) {
+				i->second.serialize(couts);
+			} else {
+				BufferManager::Instance().writeDataToFile(_fileName, block_index, buff);
+
+				block_index++;
+				couts.reset();
+				i->second.serialize(couts);
+			}
+		}
+
+		BufferManager::Instance().writeDataToFile(_fileName, block_index, buff);
+		couts.reset();
+		block_index++;
+		couts << _real_record_ptrs.size();
+		for (auto i = _real_record_ptrs.cbegin(); i != _real_record_ptrs.cend(); i++) {
+			couts << i->first << i->second.size();
+			for (auto j = i->second.cbegin(); j != i->second.cend(); j++) {
+				if (couts.remain() > sizeof(*j)) {
+					couts << *j;
+				} else {
+					BufferManager::Instance().writeDataToFile(_fileName, block_index, buff);
+					couts.reset();
+					block_index++;
+					couts << *j;
+				}
+			}
+			couts.reset();
+			block_index++;
+		}
+
+		BufferManager::Instance().writeDataToFile(_fileName, block_index, buff);
+		delete[] buff;
+	}
 
 
 };

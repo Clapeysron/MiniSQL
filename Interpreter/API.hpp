@@ -46,10 +46,10 @@ private:
 public:
     string exec();
     void set_sql(string sql);
-	static CatalogManager CM;
+	//static CatalogManager CM;
 	static RecordManager RM;
-	static IndexManager IM;
-	static BufferManager BM;
+	//static IndexManager IM;
+	//static BufferManager BM;
 };
 
 #ifdef __cplusplus

@@ -10,10 +10,9 @@
 #include <algorithm>
 
 
-BufferManager API::BM = BufferManager(4096, 256);
-CatalogManager API::CM = CatalogManager("catalog");
-RecordManager API::RM = RecordManager(BM, 4096);
-IndexManager API::IM = IndexManager("index");
+RecordManager API::RM = RecordManager(BufferManager::Instance(), 4096);
+CatalogManager& CM = CatalogManager::Instance();
+IndexManager& IM = IndexManager::Instance();
 
 
 void API::set_sql(string sql) {
@@ -348,30 +347,31 @@ vector<int> API::search_between(string table_name, int type_1, string comp, int 
 	vector<int> ret_indexs;
 	if (!CM.have_table(table_name)) {
 		std::cerr << "no such table" << std::endl;
-		ret_indexs.push_back(-1); // -1 for no ret_indexs
+		ret_indexs.push_back(-1); // -1 for no table_name
 		return ret_indexs;
 	} else {
 		TableInfo& temp_table = CM.find_table(table_name);
 		if (type_1 == 81) {
-			if (!temp_table.have_field(comp)) {
+			if (!temp_table.have_column(comp)) {
 				std::cerr << "no such column" << std::endl;
-				ret_indexs.push_back(-1); // -1 for no ret_indexs
+				ret_indexs.push_back(-1); // -1 for no ret_indexs and no such column;
 				return ret_indexs;
 			} else {
-				FieldInfo temp_field = IM.find_field(comp);
+				FieldInfo temp_field = temp_table.get_column(comp);
 				std::stringstream ss;
 				ss << between_1 << between_2;
 
 				//std::string temp_index = temp_table.find_index(comp);
 				if (type_2 == temp_field.get_type_magic_num() && type_3 == temp_field.get_type_magic_num()) {
 					if (temp_table.have_index(comp)) {
-						std::string temp_index = temp_table.find_index(comp);
+						std::string temp_index = temp_table.find_index(comp).second;
 						switch (type_2) {
 						case 82: {
 							std::string real_between_1;
 							std::string real_between_2;
 							ss >> real_between_1 >> real_between_2;
 							ret_indexs = IM.search_range(temp_index, &real_between_1, &real_between_2);
+							return ret_indexs;
 							break;
 						}
 
@@ -380,6 +380,7 @@ vector<int> API::search_between(string table_name, int type_1, string comp, int 
 							int real_between_2;
 							ss >> real_between_1 >> real_between_2;
 							ret_indexs = IM.search_range(temp_index, &real_between_1, &real_between_2);
+							return ret_indexs;
 							break;
 						}
 
@@ -388,26 +389,29 @@ vector<int> API::search_between(string table_name, int type_1, string comp, int 
 							float real_between_2;
 							ss >> real_between_1 >> real_between_2;
 							ret_indexs = IM.search_range(temp_index, &real_between_1, &real_between_2);
+							return ret_indexs;
 							break;
 						}
 						default:
-							std::cerr << "no such type_2" << std::endl;
-							ret_indexs.push_back(-1); // -1 for no ret_indexs
+							std::cout << "no such type_2" << std::endl;
+							ret_indexs.push_back(-2); // -2 for no such type;
 							return ret_indexs;
 						}
 					} else {
-						ret_indexs.push_back(-2); // -2 for all ret_indexs
-						return ret_indexs;
-					}
+						//TODO: to be implemented by melody;
+						std::cout << "dfz have no index, to be fixed by melody" << std::endl;
+					} 
 				} else {
 					std::cerr << "type not match" << std::endl;
-					ret_indexs.push_back(-1); // -1 for no ret_indexs
+					ret_indexs.push_back(-3); // -3 for type not match
 					return ret_indexs;
 				}
 
 			}
 		} else {
 			//TODO: to implement 3=3, 3=a 
+			ret_indexs.push_back(-2); // -2 for not a column;
+			return ret_indexs;
 		}
 	}
 
@@ -524,7 +528,7 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 			std::vector<int> length_list;
 
 			std::vector<AttrInfo> ats;
-			const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_fields();
+			const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
 			for (size_t i = 0; i < fields.size(); i++) {
 				int length = type_list[i] == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
 				if (value_list[i].size()>length) {
@@ -547,7 +551,7 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 
 			RM.insertIntoTable(ts, data);
 
-
+			IM.insert("", "", std::vector<int>(), std::vector<int>());
 			
 			//delete[] data;
 			//RM.insert(table_name, type_list, value_list);

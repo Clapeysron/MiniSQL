@@ -24,21 +24,24 @@ private:
     int getRecordLen(TableStruct &ts);
     bool isDup(TableStruct &ts, char* record);
     bool isDupEntry(vector<int> &pos, char *src, char *dst);
+	
 
 public:
+	RecordManager(BufferManager &bm, int blockSize) :bm(bm), blockSize(blockSize) {
+
+	};
+	~RecordManager() {
+		blockSize = 4096;
+	};
     bool createTable(string tableName);
     bool dropTable(string tableName);
     int insertIntoTable(TableStruct &ts, char* data);
     int deleteRecord(TableStruct &ts, vector<int> &scope, vector<int> &moved);
     bool selectRecord(TableStruct &ts, vector<int> &scope, vector<char *> &result);
     bool selectAttribute(TableStruct &ts, string col, vector<char *> &values);
+	
 
-    RecordManager(BufferManager &bm, int blockSize):bm(bm), blockSize(blockSize){
-
-    };
-    ~RecordManager(){
-        blockSize = 4096;
-    };
+    
 };
 
 

@@ -52,6 +52,7 @@ public:
 			break;
 		default:
 			assert(1 == 2);
+			return "no such type";
 			//throw SomeError("no such type");
 			break;
 		}

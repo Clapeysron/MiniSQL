@@ -6,8 +6,8 @@
 #include <map>
 #include <utility>
 #include "..\IndexManager\TypeInfo.h"
-#include "..\BufferManager\BufferManager.h"
-#include "..\RecordManager\RecordManager.h"
+//#include "..\BufferManager\BufferManager.h"
+//#include "..\RecordManager\RecordManager.h"
 #include <iostream>
 #include <algorithm>
 
@@ -100,9 +100,20 @@ public:
 
 	const std::pair<Type, std::string>& get_primary_index();
 
-	const std::vector<FieldInfo>& get_fields() {
+	const std::vector<FieldInfo>& get_columns() {
 		return _fields;
 	}
+
+	const FieldInfo& get_column(const std::string& name) {
+		for (size_t i = 0; i < _fields.size(); i++) {
+			if (_fields[i].get_name() == name) {
+				return _fields[i];
+			}
+		}
+		std::cout << "CatalogManager: no such column in '" + _name + "'";
+		return FieldInfo(Int, false, "", false, "");
+	}
+
 
 	void show_fields() {
 		for (size_t i = 0; i < _fields.size(); i++) {
@@ -124,13 +135,16 @@ private:
 
 class CatalogManager {
 public:
-	CatalogManager(std::string fileName);
-	~CatalogManager();
+	static CatalogManager& Instance() {
+		static CatalogManager theSingleton("Catalog");
+		return theSingleton;
+	}
+	
 
 	void add_table(TableInfo& table);
 
 	void create_table(const std::string& table_name,
-		const std::vector<string>& name_list,
+		const std::vector<std::string>& name_list,
 		const std::vector<int>& type_list,
 		const std::vector<int>& length_list,
 		const std::vector<int>& primary_flag,
@@ -145,7 +159,8 @@ public:
 			return i->second;
 		} else {
 			//throw SomeError("Error: no such table '" + tableName + "'");
-			std::cerr << "Error: no such table '" + tableName + "'" << std::endl;
+			std::cout << "Error: no such table '" + tableName + "'" << std::endl;
+			
 		}
 	}
 
@@ -195,7 +210,8 @@ private:
 	std::map<std::string, TableInfo> _tables;
 	std::string _fileName;
 
-	static BufferManager BM;
+	CatalogManager(std::string fileName);
+	~CatalogManager();
 
 };
 
