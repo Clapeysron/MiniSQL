@@ -418,91 +418,94 @@ private:
 			size_t string_index_num;
 			size_t block_count = 0;
 			size_t block_size = BufferManager::Instance().getBlockSize();
-			CharInStream cis(allBlocks[block_count], block_size);
-			cis >> int_index_num >> float_index_num >> string_index_num;
-			//while (block_count+1 < (allBlocks.size())) {
+			if (block_count < allBlocks.size()) {
+				CharInStream cis(allBlocks[block_count], block_size);
+				cis >> int_index_num >> float_index_num >> string_index_num;
+				//while (block_count+1 < (allBlocks.size())) {
 
 
-			for (size_t i = 0; i < int_index_num; i++) {
-				if (cis.remain() > indexSize) {
-					Index<int> temp = Index<int>::deserialize(cis);
-					_intIndex.emplace(temp.getName(), temp);
-				} else {
-					block_count++;
-					cis = CharInStream(allBlocks[block_count], block_size);
-					Index<int> temp = Index<int>::deserialize(cis);
-					_intIndex.emplace(temp.getName(), temp);
-				}
-			}
-
-			for (size_t i = 0; i < float_index_num; i++) {
-				if (cis.remain() > indexSize) {
-					Index<float> temp = Index<float>::deserialize(cis);
-					_floatIndex.emplace(temp.getName(), temp);
-				} else {
-					block_count++;
-					cis = CharInStream(allBlocks[block_count], block_size);
-					Index<float> temp = Index<float>::deserialize(cis);
-					_floatIndex.emplace(temp.getName(), temp);
-				}
-			}
-
-			for (size_t i = 0; i < string_index_num; i++) {
-				if (cis.remain() > indexSize) {
-					Index<std::string> temp = Index<std::string>::deserialize(cis);
-					_stringIndex.emplace(temp.getName(), temp);
-				} else {
-					block_count++;
-					cis = CharInStream(allBlocks[block_count], block_size);
-					Index<std::string> temp = Index<std::string>::deserialize(cis);
-					_stringIndex.emplace(temp.getName(), temp);
-				}
-			}
-
-			block_count++;
-			cis = CharInStream(allBlocks[block_count], block_size);
-			char* a = allBlocks[0];
-			char* b = allBlocks[1];
-			size_t real_records_num;
-			cis >> real_records_num;
-
-			for (size_t i = 0; i < real_records_num; i++) {
-				size_t record_amount;
-				std::string table_name;
-
-				if (cis.remain() > sizeof(record_amount) + sizeof(table_name)) {
-					cis >> table_name >> record_amount;
-				} else {
-					block_count++;
-					cis = CharInStream(allBlocks[block_count], block_size);
-					cis >> table_name >> record_amount;
-				}
-
-				std::vector<record_ptr> real_records;
-				for (size_t i = 0; i < record_amount; i++) {
-					if (cis.remain() > sizeof(record_ptr)) {
-						record_ptr temp;
-						cis >> temp;
-						real_records.push_back(temp);
+				for (size_t i = 0; i < int_index_num; i++) {
+					if (cis.remain() > indexSize) {
+						Index<int> temp = Index<int>::deserialize(cis);
+						_intIndex.emplace(temp.getName(), temp);
 					} else {
 						block_count++;
 						cis = CharInStream(allBlocks[block_count], block_size);
-						record_ptr temp;
-						cis >> temp;
-						real_records.push_back(temp);
+						Index<int> temp = Index<int>::deserialize(cis);
+						_intIndex.emplace(temp.getName(), temp);
+					}
+				}
+
+				for (size_t i = 0; i < float_index_num; i++) {
+					if (cis.remain() > indexSize) {
+						Index<float> temp = Index<float>::deserialize(cis);
+						_floatIndex.emplace(temp.getName(), temp);
+					} else {
+						block_count++;
+						cis = CharInStream(allBlocks[block_count], block_size);
+						Index<float> temp = Index<float>::deserialize(cis);
+						_floatIndex.emplace(temp.getName(), temp);
+					}
+				}
+
+				for (size_t i = 0; i < string_index_num; i++) {
+					if (cis.remain() > indexSize) {
+						Index<std::string> temp = Index<std::string>::deserialize(cis);
+						_stringIndex.emplace(temp.getName(), temp);
+					} else {
+						block_count++;
+						cis = CharInStream(allBlocks[block_count], block_size);
+						Index<std::string> temp = Index<std::string>::deserialize(cis);
+						_stringIndex.emplace(temp.getName(), temp);
+					}
+				}
+
+				block_count++;
+				cis = CharInStream(allBlocks[block_count], block_size);
+				char* a = allBlocks[0];
+				char* b = allBlocks[1];
+				size_t real_records_num;
+				cis >> real_records_num;
+
+				for (size_t i = 0; i < real_records_num; i++) {
+					size_t record_amount;
+					std::string table_name;
+
+					if (cis.remain() > sizeof(record_amount) + sizeof(table_name)) {
+						cis >> table_name >> record_amount;
+					} else {
+						block_count++;
+						cis = CharInStream(allBlocks[block_count], block_size);
+						cis >> table_name >> record_amount;
 					}
 
-				}
-				_real_record_ptrs.emplace(table_name, real_records);
-				/*	block_count++;
+					std::vector<record_ptr> real_records;
+					for (size_t i = 0; i < record_amount; i++) {
+						if (cis.remain() > sizeof(record_ptr)) {
+							record_ptr temp;
+							cis >> temp;
+							real_records.push_back(temp);
+						} else {
+							block_count++;
+							cis = CharInStream(allBlocks[block_count], block_size);
+							record_ptr temp;
+							cis >> temp;
+							real_records.push_back(temp);
+						}
+
+					}
+					_real_record_ptrs.emplace(table_name, real_records);
+					/*	block_count++;
 					cis = CharInStream(allBlocks[block_count], block_size);*/
-			}
+				}
 
-			for (size_t i = 0; i < allBlocks.size(); i++) {
-				delete[] allBlocks[i];
-			}
-			//}
+				for (size_t i = 0; i < allBlocks.size(); i++) {
+					delete[] allBlocks[i];
+				}
+				//}
 
+			}
+			
 		}
 	}
 

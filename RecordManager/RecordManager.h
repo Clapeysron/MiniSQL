@@ -32,8 +32,8 @@ public:
     int op;
 
     string _str;
-    string _int;
-    string _flo;
+    int _int;
+    float _flo;
 };
 #define COL 81
 #define STR 82
@@ -69,7 +69,7 @@ public:
     int insertIntoTable(TableStruct &ts, char* data);
     int deleteRecord(TableStruct &ts, vector<int> &scope, vector<char *> &moved);
     bool selectRecordWithCondition(TableStruct &ts, vector<int> &scope, vector<int> &results, int &comparison_type, int &type_1, string &comp_1, int &type_2, string comp_2);
-    bool selectRecord(TableStruct &ts, vector<int> &scope, vector<char *> &result);
+    bool selectAll(TableStruct &ts, vector<string> &result, vector<string> &col_list);
   	bool selectAll(TableStruct &ts, vector<string> &result);
     bool selectAttribute(TableStruct &ts, string col, vector<char *> &values);
 

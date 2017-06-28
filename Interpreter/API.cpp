@@ -333,25 +333,23 @@ string API::exec() {
 string API::select_all(string table_name, vector<string> col_list) {
 	string ret_string;
 	if (CM.have_table(table_name)) {
-		if (col_list.size() == 1 && col_list[0] == "*") {
-			std::vector<AttrInfo> ats;
-			const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
-			for (size_t i = 0; i < fields.size(); i++) {
-				int length = fields[i].get_type_magic_num() == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
-				bool index = fields[i].get_index() == "" ? false : true;
-				ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
-			}
-			TableStruct ts(table_name, IM.get_record_size(table_name), ats);
-			//RM.selectRecord(table_name, )
-			std::vector<std::string> buff;
-			RM.selectAll(ts, buff);
-			for (size_t i = 0; i < buff.size(); i++) {
-				ret_string += buff[i];
-			}
-			ret_string += std::to_string(buff.size()-4) + " rows in set (0.00 sec)\n";
-		} else {
-			ret_string += "to be done\n";
+
+		std::vector<AttrInfo> ats;
+		const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
+		for (size_t i = 0; i < fields.size(); i++) {
+			int length = fields[i].get_type_magic_num() == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
+			bool index = fields[i].get_index() == "" ? false : true;
+			ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
 		}
+		TableStruct ts(table_name, IM.get_record_size(table_name), ats);
+		//RM.selectRecord(table_name, )
+		std::vector<std::string> buff;
+		RM.selectAll(ts, buff, col_list);
+		for (size_t i = 0; i < buff.size(); i++) {
+			ret_string += buff[i];
+		}
+		ret_string += std::to_string(buff.size() - 4) + " rows in set (0.00 sec)\n";
+
 	}
 
 	return ret_string;
@@ -372,12 +370,12 @@ string API::select(string table_name, vector<string> col_list, vector<int> index
 				ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
 			}
 			TableStruct ts(table_name, IM.get_record_size(table_name), ats);
-			std::vector<char*> buff;
+			std::vector<std::string> buff;
 			RM.selectRecord(ts, indexs, buff);
 
 			//TODO: convert to a proper format;
 			for (size_t i = 0; i < buff.size(); i++) {
-				ret_string += std::string(buff[1]);
+				ret_string += buff[i];
 				ret_string += "1213123123123\n";
 			}
 
@@ -475,7 +473,6 @@ vector<int> API::search_between(string table_name, int type_1, string comp, int 
 
 	return ret_indexs;
 }
-
 
 
 vector<int> API::search_where(string table_name, int comparison_type, int type_2, string comp_2, int type_1, string comp_1) {
@@ -614,7 +611,7 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 			char * data = new char[buffsize];
 			int offset = 0;
 			for (size_t i = 0; i < value_list.size(); i++) {
-				memcpy(data + offset, value_list[i].data(), value_list[i].length()+1);
+				memcpy(data + offset, value_list[i].data(), value_list[i].length() + 1);
 				offset += length_list[i];
 			}
 
@@ -648,7 +645,7 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 						break;
 					}
 
-					
+
 				}
 				startPoint += ts.attrs[i].length;
 
