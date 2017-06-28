@@ -332,11 +332,6 @@ string API::exec() {
 
 string API::select_all(string table_name, vector<string> col_list) {
 	string ret_string;
-	// TODO: API select_all
-	// bool CM.have_table(table_name);
-	// bool CM.have_column(col_list);
-	// string RM.select_all(table_name);
-	// string > out_string
 	if (CM.have_table(table_name)) {
 		if (col_list.size() == 1 && col_list[0] == "*") {
 			std::vector<AttrInfo> ats;
@@ -352,10 +347,8 @@ string API::select_all(string table_name, vector<string> col_list) {
 			RM.selectAll(ts, buff);
 			for (size_t i = 0; i < buff.size(); i++) {
 				ret_string += buff[i];
-
-				// TODO: be implemented by melody
 			}
-
+			ret_string += std::to_string(buff.size()-4) + " rows in set (0.00 sec)\n";
 		} else {
 			ret_string += "to be done\n";
 		}
@@ -621,7 +614,7 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 			char * data = new char[buffsize];
 			int offset = 0;
 			for (size_t i = 0; i < value_list.size(); i++) {
-				memcpy(data + offset, value_list[i].data(), value_list.size());
+				memcpy(data + offset, value_list[i].data(), value_list[i].length()+1);
 				offset += length_list[i];
 			}
 
@@ -655,9 +648,9 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 						break;
 					}
 
-					startPoint += ts.attrs[i].length;
+					
 				}
-
+				startPoint += ts.attrs[i].length;
 
 			}
 			IM.insert_real_index(table_name);
@@ -839,7 +832,7 @@ string API::show_status() {
 		std::cout << std::endl;
 	}
 
-	//CM.show_fields("test");
+
 	string ret_string;
 	ret_string += "Status flag in Managers\n";
 	return ret_string;

@@ -19,9 +19,23 @@ create table test3(
 
 
 
-insert into test0 values(0,0);
-insert into test0 values(1,0);
-insert into test0 values(2,0);
-insert into test0 values(3,0);
-insert into test0 values(4,0);
-insert into test0 values(5,0);
+-- insert into test0 values(0,0);
+-- insert into test0 values(1,0);
+-- insert into test0 values(2,0);
+-- insert into test0 values(3,0);
+-- insert into test0 values(4,0);
+-- insert into test0 values(5,0);
+
+insert into test1 values(0.0,0.1);
+insert into test1 values(1.0,0.1);
+insert into test1 values(2.0,0.1);
+insert into test1 values(3.0,0.1);
+insert into test1 values(4.0,0.1);
+insert into test1 values(5.0,0.1);
+
+-- insert into test2 values("0","0");
+-- insert into test2 values("1","0");
+-- insert into test2 values("2","0");
+-- insert into test2 values("3","0");
+-- insert into test2 values("4","0");
+-- insert into test2 values("5","0");
