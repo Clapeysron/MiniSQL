@@ -363,6 +363,17 @@ public:
 		return _real_record_ptrs.at(tableName).size();
 	}
 
+	int get_real_record_amount(std::string tableName) {
+		int result = 0;
+		std::vector<int> record_ptrs = _real_record_ptrs.at(tableName);
+		for (size_t i = 0; i < record_ptrs.size(); i++) {
+			if (record_ptrs[i] != -1) {
+				result++;
+			}
+		}
+		return result;
+	}
+
 
 
 
@@ -539,7 +550,7 @@ private:
 		BufferManager::Instance().writeDataToFile(_fileName, block_index, buff);
 		couts.reset();
 		block_index++;
-		
+
 		couts << _real_record_ptrs.size();
 		for (auto i = _real_record_ptrs.cbegin(); i != _real_record_ptrs.cend(); i++) {
 			couts << i->first << i->second.size();

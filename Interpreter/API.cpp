@@ -348,21 +348,19 @@ string API::select_all(string table_name, vector<string> col_list) {
 			}
 			TableStruct ts(table_name, IM.get_record_size(table_name), ats);
 			//RM.selectRecord(table_name, )
-			std::vector<char*> buff;
+			std::vector<std::string> buff;
 			RM.selectAll(ts, buff);
 			for (size_t i = 0; i < buff.size(); i++) {
-				ret_string += std::string(buff[i]);
-				ret_string += "\n";
+				ret_string += buff[i];
+
 				// TODO: be implemented by melody
 			}
-			for (size_t i = 0; i < buff.size(); i++) {
-				delete[] buff[i];
-			}
+
 		} else {
 			ret_string += "to be done\n";
 		}
 	}
-	
+
 	return ret_string;
 }
 
@@ -838,6 +836,7 @@ string API::show_status() {
 		std::cout << *i << std::endl;
 		CM.show_fields(*i);
 		std::cout << std::endl;
+		IM.get_record_size(*i);
 	}
 	//CM.show_fields("test");
 	string ret_string;
