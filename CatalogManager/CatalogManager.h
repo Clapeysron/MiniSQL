@@ -26,7 +26,7 @@ public:
 		return _name;
 	}
 
-	int get_type_magic_num();
+	int get_type_magic_num  () const;
 
 	TypeInfo& get_type() {
 		return _type;

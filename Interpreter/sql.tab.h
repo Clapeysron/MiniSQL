@@ -92,7 +92,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 12 "sql.y"
+#line 12 ".\\sql.y"
 
 	int intval;
 	double floatval;

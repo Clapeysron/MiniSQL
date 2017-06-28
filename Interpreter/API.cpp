@@ -333,22 +333,65 @@ string API::select_all(string table_name, vector<string> col_list) {
 	// bool CM.have_column(col_list);
 	// string RM.select_all(table_name);
 	// string > out_string
-	ret_string += "+-------+-------+\n";
+	if (CM.have_table(table_name)) {
+		if (col_list.size()==1&&col_list[0]=="*") {
+			std::vector<AttrInfo> ats;
+			const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
+			for (size_t i = 0; i < fields.size(); i++) {
+				int length = fields[i].get_type_magic_num() == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
+				bool index = fields[i].get_index() == "" ? false : true;
+				ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
+			}
+			TableStruct ts(table_name, IM.get_record_size(table_name), ats);
+			//RM.selectRecord(table_name, )
+		}
+		else {
+			ret_string += "to be done\n";
+		}
+	}
+	/*ret_string += "+-------+-------+\n";
 	ret_string += "| s_ID  | i_ID  |\n";
 	ret_string += "+-------+-------+\n";
 	ret_string += "| 12345 | 10101 |\n";
 	ret_string += "+-------+-------+\n";
-	ret_string += "9 rows in set (0.00 sec)\n";
+	ret_string += "9 rows in set (0.00 sec)\n";*/
 	return ret_string;
 }
 
 string API::select(string table_name, vector<string> col_list, vector<int> indexs) {
 	string ret_string;
 	// TODO: API select_all
-	// bool CM.have_table(table_name);
-	// bool CM.have_column(col_list);
-	// string RM.select_part(table_name, indexs);
-	// string > out_string
+	
+	if (CM.have_table(table_name)) {
+		if (CM.have_column(table_name, col_list)) {
+
+			std::vector<AttrInfo> ats;
+			const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
+			for (size_t i = 0; i < fields.size(); i++) {
+				int length = fields[i].get_type_magic_num() == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
+				bool index = fields[i].get_index() == "" ? false : true;
+				ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
+			}
+			TableStruct ts(table_name, IM.get_record_size(table_name), ats);
+			std::vector<char*> buff;
+			RM.selectRecord(ts, indexs, buff);
+
+			//TODO: convert to a proper format;
+			for (size_t i = 0; i < buff.size(); i++) {
+				ret_string += std::string(buff[1]);
+				ret_string += "1213123123123\n";
+			}
+
+			for (size_t i = 0; i < buff.size(); i++) {
+				delete[] buff[i];
+			}
+			
+		} else {
+			ret_string += "Error: have no such column\n";
+		}
+	} else {
+		ret_string += "Error: have no such table\n";
+	}
 	ret_string += "+-------+-------+\n";
 	ret_string += "| s_ID  | i_ID  |\n";
 	ret_string += "+-------+-------+\n";

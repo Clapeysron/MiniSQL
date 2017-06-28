@@ -409,7 +409,7 @@ private:
 			size_t string_index_num;
 			size_t block_count = 0;
 			size_t block_size = BufferManager::Instance().getBlockSize();
-			while (block_count != allBlocks.size()) {
+			while (block_count+1 < (allBlocks.size())) {
 				CharInStream cis(allBlocks[block_count], block_size);
 				cis >> int_index_num >> float_index_num >> string_index_num;
 
@@ -450,6 +450,7 @@ private:
 				}
 
 				block_count++;
+				cis = CharInStream(allBlocks[block_count], block_size);
 				size_t real_records_num;
 				cis >> real_records_num;
 
@@ -550,8 +551,8 @@ private:
 					couts << *j;
 				}
 			}
-			couts.reset();
-			block_index++;
+	/*		couts.reset();
+			block_index++;*/
 		}
 
 		BufferManager::Instance().writeDataToFile(_fileName, block_index, buff);

@@ -175,7 +175,7 @@ select_expr_list:
     | '*' { emit("81 *"); $$ = 1; }
     ;
 select_expr: 
-    type_expr
+    NAME
     ;
 opt_where:
     | WHERE expr { emit("WHERE"); }
@@ -263,7 +263,7 @@ void yyerror(char *s, ...)
   extern int yylineno;
   va_list ap;
   va_start(ap, s);
-  fprintf(stderr, "%d: error: ", yylineno);
+  fprintf(stderr, "Error: ", yylineno);
   vfprintf(stderr, s, ap);
-  fprintf(stderr, "\n");
+  fprintf(stderr, "\n\n");
 }

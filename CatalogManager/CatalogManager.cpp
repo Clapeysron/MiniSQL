@@ -236,6 +236,6 @@ void FieldInfo::serialize(CharOutStream & couts) const {
 	_type.serialize(couts);
 }
 
-int FieldInfo::get_type_magic_num() {
+int FieldInfo::get_type_magic_num() const {
 	return _type.get_type_magic();
 }

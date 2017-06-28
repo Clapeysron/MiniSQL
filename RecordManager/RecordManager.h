@@ -7,7 +7,7 @@
 //#include "BufferManager.h"
 #include "../BufferManager/BufferManager.h"
 #include "TableStruct.h"
-#include "CharStream.h"
+#include "../CatalogManager/CharStream.h"
 
 #include <vector>
 #include <string>

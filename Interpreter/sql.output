@@ -74,7 +74,7 @@ Grammar
    37                 | select_expr_list ',' select_expr
    38                 | '*'
 
-   39 select_expr: type_expr
+   39 select_expr: NAME
 
    40 opt_where: /* empty */
    41          | WHERE expr
@@ -119,7 +119,7 @@ $end (0) 0
 '.' (46) 50
 ';' (59) 1 2
 error (256)
-NAME (258) 4 6 11 12 14 16 22 32 33 35 43 44 49 50 54
+NAME (258) 4 6 11 12 14 16 22 32 33 35 39 43 44 49 50 54
 ERROR_STR (259)
 STRING (260) 55
 INTNUM (261) 28 31 56
@@ -218,7 +218,7 @@ exit_stmt (73)
 expr (74)
     on left: 53 58 59, on right: 41 58
 type_expr (75)
-    on left: 54 55 56 57, on right: 8 9 12 39 53 59
+    on left: 54 55 56 57, on right: 8 9 12 53 59
 
 
 State 0
@@ -293,15 +293,11 @@ State 6
 
    35 select_stmt: SELECT . select_expr_list FROM NAME opt_where
 
-    NAME    shift, and go to state 29
-    STRING  shift, and go to state 30
-    INTNUM  shift, and go to state 31
-    FLOAT   shift, and go to state 32
-    '*'     shift, and go to state 33
+    NAME  shift, and go to state 29
+    '*'   shift, and go to state 30
 
-    select_expr_list  go to state 34
-    select_expr       go to state 35
-    type_expr         go to state 36
+    select_expr_list  go to state 31
+    select_expr       go to state 32
 
 
 State 7
@@ -309,15 +305,15 @@ State 7
    46 show_stmt: SHOW . TABLES
    47          | SHOW . STATUS
 
-    STATUS  shift, and go to state 37
-    TABLES  shift, and go to state 38
+    STATUS  shift, and go to state 33
+    TABLES  shift, and go to state 34
 
 
 State 8
 
    11 update_stmt: UPDATE . NAME SET update_asgn_list opt_where
 
-    NAME  shift, and go to state 39
+    NAME  shift, and go to state 35
 
 
 State 9
@@ -332,7 +328,7 @@ State 10
     0 $accept: stmt_list . $end
     2 stmt_list: stmt_list . stmt ';'
 
-    $end    shift, and go to state 40
+    $end    shift, and go to state 36
     CREATE  shift, and go to state 1
     DELETE  shift, and go to state 2
     DROP    shift, and go to state 3
@@ -343,7 +339,7 @@ State 10
     UPDATE  shift, and go to state 8
     EXIT    shift, and go to state 9
 
-    stmt               go to state 41
+    stmt               go to state 37
     delete_stmt        go to state 12
     insert_stmt        go to state 13
     update_stmt        go to state 14
@@ -360,7 +356,7 @@ State 11
 
     1 stmt_list: stmt . ';'
 
-    ';'  shift, and go to state 42
+    ';'  shift, and go to state 38
 
 
 State 12
@@ -437,35 +433,35 @@ State 22
 
    16 create_index_stmt: CREATE KEY . NAME ON NAME '(' index_expr_list ')'
 
-    NAME  shift, and go to state 43
+    NAME  shift, and go to state 39
 
 
 State 23
 
    14 create_table_stmt: CREATE TABLE . NAME '(' create_col_list ')'
 
-    NAME  shift, and go to state 44
+    NAME  shift, and go to state 40
 
 
 State 24
 
     4 delete_stmt: DELETE FROM . NAME opt_where
 
-    NAME  shift, and go to state 45
+    NAME  shift, and go to state 41
 
 
 State 25
 
    44 drop_stmt: DROP KEY . NAME ON NAME
 
-    NAME  shift, and go to state 46
+    NAME  shift, and go to state 42
 
 
 State 26
 
    43 drop_stmt: DROP TABLE . NAME
 
-    NAME  shift, and go to state 47
+    NAME  shift, and go to state 43
 
 
 State 27
@@ -473,7 +469,7 @@ State 27
    49 exec_stmt: EXEC NAME .
    50          | EXEC NAME . '.' NAME
 
-    '.'  shift, and go to state 48
+    '.'  shift, and go to state 44
 
     $default  reduce using rule 49 (exec_stmt)
 
@@ -482,251 +478,219 @@ State 28
 
     6 insert_stmt: INSERT INTO . NAME VALUES insert_vals_list
 
-    NAME  shift, and go to state 49
+    NAME  shift, and go to state 45
 
 
 State 29
 
-   54 type_expr: NAME .
+   39 select_expr: NAME .
 
-    $default  reduce using rule 54 (type_expr)
+    $default  reduce using rule 39 (select_expr)
 
 
 State 30
-
-   55 type_expr: STRING .
-
-    $default  reduce using rule 55 (type_expr)
-
-
-State 31
-
-   56 type_expr: INTNUM .
-
-    $default  reduce using rule 56 (type_expr)
-
-
-State 32
-
-   57 type_expr: FLOAT .
-
-    $default  reduce using rule 57 (type_expr)
-
-
-State 33
 
    38 select_expr_list: '*' .
 
     $default  reduce using rule 38 (select_expr_list)
 
 
-State 34
+State 31
 
    35 select_stmt: SELECT select_expr_list . FROM NAME opt_where
    37 select_expr_list: select_expr_list . ',' select_expr
 
-    FROM  shift, and go to state 50
-    ','   shift, and go to state 51
+    FROM  shift, and go to state 46
+    ','   shift, and go to state 47
 
 
-State 35
+State 32
 
    36 select_expr_list: select_expr .
 
     $default  reduce using rule 36 (select_expr_list)
 
 
-State 36
-
-   39 select_expr: type_expr .
-
-    $default  reduce using rule 39 (select_expr)
-
-
-State 37
+State 33
 
    47 show_stmt: SHOW STATUS .
 
     $default  reduce using rule 47 (show_stmt)
 
 
-State 38
+State 34
 
    46 show_stmt: SHOW TABLES .
 
     $default  reduce using rule 46 (show_stmt)
 
 
-State 39
+State 35
 
    11 update_stmt: UPDATE NAME . SET update_asgn_list opt_where
 
-    SET  shift, and go to state 52
+    SET  shift, and go to state 48
 
 
-State 40
+State 36
 
     0 $accept: stmt_list $end .
 
     $default  accept
 
 
-State 41
+State 37
 
     2 stmt_list: stmt_list stmt . ';'
 
-    ';'  shift, and go to state 53
+    ';'  shift, and go to state 49
 
 
-State 42
+State 38
 
     1 stmt_list: stmt ';' .
 
     $default  reduce using rule 1 (stmt_list)
 
 
-State 43
+State 39
 
    16 create_index_stmt: CREATE KEY NAME . ON NAME '(' index_expr_list ')'
+
+    ON  shift, and go to state 50
+
+
+State 40
+
+   14 create_table_stmt: CREATE TABLE NAME . '(' create_col_list ')'
+
+    '('  shift, and go to state 51
+
+
+State 41
+
+    4 delete_stmt: DELETE FROM NAME . opt_where
+
+    WHERE  shift, and go to state 52
+
+    $default  reduce using rule 40 (opt_where)
+
+    opt_where  go to state 53
+
+
+State 42
+
+   44 drop_stmt: DROP KEY NAME . ON NAME
 
     ON  shift, and go to state 54
 
 
-State 44
-
-   14 create_table_stmt: CREATE TABLE NAME . '(' create_col_list ')'
-
-    '('  shift, and go to state 55
-
-
-State 45
-
-    4 delete_stmt: DELETE FROM NAME . opt_where
-
-    WHERE  shift, and go to state 56
-
-    $default  reduce using rule 40 (opt_where)
-
-    opt_where  go to state 57
-
-
-State 46
-
-   44 drop_stmt: DROP KEY NAME . ON NAME
-
-    ON  shift, and go to state 58
-
-
-State 47
+State 43
 
    43 drop_stmt: DROP TABLE NAME .
 
     $default  reduce using rule 43 (drop_stmt)
 
 
-State 48
+State 44
 
    50 exec_stmt: EXEC NAME '.' . NAME
 
-    NAME  shift, and go to state 59
+    NAME  shift, and go to state 55
 
 
-State 49
+State 45
 
     6 insert_stmt: INSERT INTO NAME . VALUES insert_vals_list
 
-    VALUES  shift, and go to state 60
+    VALUES  shift, and go to state 56
 
 
-State 50
+State 46
 
    35 select_stmt: SELECT select_expr_list FROM . NAME opt_where
 
-    NAME  shift, and go to state 61
+    NAME  shift, and go to state 57
 
 
-State 51
+State 47
 
    37 select_expr_list: select_expr_list ',' . select_expr
 
-    NAME    shift, and go to state 29
-    STRING  shift, and go to state 30
-    INTNUM  shift, and go to state 31
-    FLOAT   shift, and go to state 32
+    NAME  shift, and go to state 29
 
-    select_expr  go to state 62
-    type_expr    go to state 36
+    select_expr  go to state 58
 
 
-State 52
+State 48
 
    11 update_stmt: UPDATE NAME SET . update_asgn_list opt_where
 
-    NAME  shift, and go to state 63
+    NAME  shift, and go to state 59
 
-    update_asgn_list  go to state 64
+    update_asgn_list  go to state 60
 
 
-State 53
+State 49
 
     2 stmt_list: stmt_list stmt ';' .
 
     $default  reduce using rule 2 (stmt_list)
 
 
-State 54
+State 50
 
    16 create_index_stmt: CREATE KEY NAME ON . NAME '(' index_expr_list ')'
 
-    NAME  shift, and go to state 65
+    NAME  shift, and go to state 61
 
 
-State 55
+State 51
 
    14 create_table_stmt: CREATE TABLE NAME '(' . create_col_list ')'
 
     $default  reduce using rule 21 ($@1)
 
-    create_col_list    go to state 66
-    create_definition  go to state 67
-    $@1                go to state 68
+    create_col_list    go to state 62
+    create_definition  go to state 63
+    $@1                go to state 64
 
 
-State 56
+State 52
 
    41 opt_where: WHERE . expr
 
-    NAME    shift, and go to state 29
-    STRING  shift, and go to state 30
-    INTNUM  shift, and go to state 31
-    FLOAT   shift, and go to state 32
+    NAME    shift, and go to state 65
+    STRING  shift, and go to state 66
+    INTNUM  shift, and go to state 67
+    FLOAT   shift, and go to state 68
 
     expr       go to state 69
     type_expr  go to state 70
 
 
-State 57
+State 53
 
     4 delete_stmt: DELETE FROM NAME opt_where .
 
     $default  reduce using rule 4 (delete_stmt)
 
 
-State 58
+State 54
 
    44 drop_stmt: DROP KEY NAME ON . NAME
 
     NAME  shift, and go to state 71
 
 
-State 59
+State 55
 
    50 exec_stmt: EXEC NAME '.' NAME .
 
     $default  reduce using rule 50 (exec_stmt)
 
 
-State 60
+State 56
 
     6 insert_stmt: INSERT INTO NAME VALUES . insert_vals_list
 
@@ -735,50 +699,50 @@ State 60
     insert_vals_list  go to state 73
 
 
-State 61
+State 57
 
    35 select_stmt: SELECT select_expr_list FROM NAME . opt_where
 
-    WHERE  shift, and go to state 56
+    WHERE  shift, and go to state 52
 
     $default  reduce using rule 40 (opt_where)
 
     opt_where  go to state 74
 
 
-State 62
+State 58
 
    37 select_expr_list: select_expr_list ',' select_expr .
 
     $default  reduce using rule 37 (select_expr_list)
 
 
-State 63
+State 59
 
    12 update_asgn_list: NAME . COMPARISON type_expr
 
     COMPARISON  shift, and go to state 75
 
 
-State 64
+State 60
 
    11 update_stmt: UPDATE NAME SET update_asgn_list . opt_where
 
-    WHERE  shift, and go to state 56
+    WHERE  shift, and go to state 52
 
     $default  reduce using rule 40 (opt_where)
 
     opt_where  go to state 76
 
 
-State 65
+State 61
 
    16 create_index_stmt: CREATE KEY NAME ON NAME . '(' index_expr_list ')'
 
     '('  shift, and go to state 77
 
 
-State 66
+State 62
 
    14 create_table_stmt: CREATE TABLE NAME '(' create_col_list . ')'
    20 create_col_list: create_col_list . ',' create_definition
@@ -787,18 +751,46 @@ State 66
     ','  shift, and go to state 79
 
 
-State 67
+State 63
 
    19 create_col_list: create_definition .
 
     $default  reduce using rule 19 (create_col_list)
 
 
-State 68
+State 64
 
    22 create_definition: $@1 . NAME data_type column_atts
 
     NAME  shift, and go to state 80
+
+
+State 65
+
+   54 type_expr: NAME .
+
+    $default  reduce using rule 54 (type_expr)
+
+
+State 66
+
+   55 type_expr: STRING .
+
+    $default  reduce using rule 55 (type_expr)
+
+
+State 67
+
+   56 type_expr: INTNUM .
+
+    $default  reduce using rule 56 (type_expr)
+
+
+State 68
+
+   57 type_expr: FLOAT .
+
+    $default  reduce using rule 57 (type_expr)
 
 
 State 69
@@ -831,10 +823,10 @@ State 72
 
     7 insert_vals_list: '(' . insert_vals ')'
 
-    NAME    shift, and go to state 29
-    STRING  shift, and go to state 30
-    INTNUM  shift, and go to state 31
-    FLOAT   shift, and go to state 32
+    NAME    shift, and go to state 65
+    STRING  shift, and go to state 66
+    INTNUM  shift, and go to state 67
+    FLOAT   shift, and go to state 68
 
     insert_vals  go to state 84
     type_expr    go to state 85
@@ -858,10 +850,10 @@ State 75
 
    12 update_asgn_list: NAME COMPARISON . type_expr
 
-    NAME    shift, and go to state 29
-    STRING  shift, and go to state 30
-    INTNUM  shift, and go to state 31
-    FLOAT   shift, and go to state 32
+    NAME    shift, and go to state 65
+    STRING  shift, and go to state 66
+    INTNUM  shift, and go to state 67
+    FLOAT   shift, and go to state 68
 
     type_expr  go to state 86
 
@@ -898,7 +890,7 @@ State 79
     $default  reduce using rule 21 ($@1)
 
     create_definition  go to state 91
-    $@1                go to state 68
+    $@1                go to state 64
 
 
 State 80
@@ -916,10 +908,10 @@ State 81
 
    58 expr: expr ANDOP . expr
 
-    NAME    shift, and go to state 29
-    STRING  shift, and go to state 30
-    INTNUM  shift, and go to state 31
-    FLOAT   shift, and go to state 32
+    NAME    shift, and go to state 65
+    STRING  shift, and go to state 66
+    INTNUM  shift, and go to state 67
+    FLOAT   shift, and go to state 68
 
     expr       go to state 96
     type_expr  go to state 70
@@ -929,10 +921,10 @@ State 82
 
    53 expr: type_expr BETWEEN . type_expr AND type_expr
 
-    NAME    shift, and go to state 29
-    STRING  shift, and go to state 30
-    INTNUM  shift, and go to state 31
-    FLOAT   shift, and go to state 32
+    NAME    shift, and go to state 65
+    STRING  shift, and go to state 66
+    INTNUM  shift, and go to state 67
+    FLOAT   shift, and go to state 68
 
     type_expr  go to state 97
 
@@ -941,10 +933,10 @@ State 83
 
    59 expr: type_expr COMPARISON . type_expr
 
-    NAME    shift, and go to state 29
-    STRING  shift, and go to state 30
-    INTNUM  shift, and go to state 31
-    FLOAT   shift, and go to state 32
+    NAME    shift, and go to state 65
+    STRING  shift, and go to state 66
+    INTNUM  shift, and go to state 67
+    FLOAT   shift, and go to state 68
 
     type_expr  go to state 98
 
@@ -1081,10 +1073,10 @@ State 100
 
     9 insert_vals: insert_vals ',' . type_expr
 
-    NAME    shift, and go to state 29
-    STRING  shift, and go to state 30
-    INTNUM  shift, and go to state 31
-    FLOAT   shift, and go to state 32
+    NAME    shift, and go to state 65
+    STRING  shift, and go to state 66
+    INTNUM  shift, and go to state 67
+    FLOAT   shift, and go to state 68
 
     type_expr  go to state 109
 
@@ -1149,10 +1141,10 @@ State 108
 
    53 expr: type_expr BETWEEN type_expr AND . type_expr
 
-    NAME    shift, and go to state 29
-    STRING  shift, and go to state 30
-    INTNUM  shift, and go to state 31
-    FLOAT   shift, and go to state 32
+    NAME    shift, and go to state 65
+    STRING  shift, and go to state 66
+    INTNUM  shift, and go to state 67
+    FLOAT   shift, and go to state 68
 
     type_expr  go to state 116
 
