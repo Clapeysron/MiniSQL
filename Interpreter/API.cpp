@@ -30,12 +30,12 @@ string API::exec() {
 	string ret_string;
 	vector<int> ret_indexs;
 	stringstream sql_stream(sql);
-	//    while(sql_stream >> buf)
-	//    {
-	//        cout << buf << ' ';
-	//    }
-	//    cout << endl;
-	//    return "abc";
+	    while(sql_stream >> buf)
+	    {
+	        cout << buf << ' ';
+	    }
+	    cout << endl;
+	    return "abc";
 	sql_stream >> buf; // STMT
 	sql_stream >> buf; // SELECT INSERT
 	if (buf == "SELECT") {
@@ -332,6 +332,7 @@ string API::exec() {
 
 string API::select_all(string table_name, vector<string> col_list) {
 	string ret_string;
+	std::cout << "fdskhfhdsafhaifdsa" << std::endl;
 	if (CM.have_table(table_name)) {
 
 		std::vector<AttrInfo> ats;
@@ -370,7 +371,7 @@ string API::select(string table_name, vector<string> col_list, vector<int> index
 				ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
 			}
 			TableStruct ts(table_name, IM.get_record_size(table_name), ats);
-			std::vector<std::string> buff;
+			std::vector<char*> buff;
 			RM.selectRecord(ts, indexs, buff);
 
 			//TODO: convert to a proper format;
