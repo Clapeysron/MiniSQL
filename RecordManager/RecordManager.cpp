@@ -231,13 +231,14 @@ bool RecordManager::selectAll(TableStruct &ts, vector<string> &result){
     if(ts.recordAmount != 0){
         for (int i = 0; i < ts.attrs.size(); ++i) {
             width.push_back(ts.attrs[i].length);
-            string* space = new string(ts.attrs[i].length, "-");
-            newline = newline + *(space) + "+\n";
+            string space((unsigned long) ts.attrs[i].length, '-');
+            newline = newline + space + "+";
             secondline += ts.attrs[i].name;
-            string* columnSpace = new string(ts.attrs[i].length - ts.attrs[i].name.length(), " ");
-            secondline += *columnSpace + "|";
+            string columnSpace(ts.attrs[i].length - ts.attrs[i].name.length(), ' ');
+            secondline += columnSpace + "|";
         }
     }
+    newline += "\n";
     secondline += "\n";
     result.push_back(newline);
     result.push_back(secondline);
@@ -252,26 +253,25 @@ bool RecordManager::selectAll(TableStruct &ts, vector<string> &result){
         int j = i % recordAmountInOneBlock;
 
         char *target = new char[recordLen]; // this target is also needed to be freed in the higher place.
-        memcpy(target, block + j * recordLen + 1, (size_t)recordLen);
-        string then = string("|");
+        memcpy(target, block + j * recordLen, (size_t)recordLen);
+        string then = "|"; 
         for (int k = 0; k < ts.attrs.size(); ++k) {
-            string this_line =string(target);
-            string this_space = string(ts.attrs[i].length - (this_line).length(), " ");
-            (then) = (then) + (this_line) + (this_space) + "|";
+            string this_line(target);
+            string this_space(ts.attrs[i].length - this_line.length(), ' ');
+            then = then + this_line + this_space + "|";
             target += ts.attrs[i].length;
         }
-        (then) += "\n";
-        result.push_back((then));
+        then += "\n";
+        result.push_back(then);
         result.push_back(newline);
         delete[] target;
     }
     result.push_back(newline);
     delete[] block;
-    
-    return true;
-	
-}
 
+    return true;
+
+}
 bool RecordManager::selectRecordWithCondition(TableStruct &ts, vector<int> &scope, vector<int> &results, int &comparison_type, int &type_1, string &comp_1, int &type_2, string comp_2){
     int recordLen = getRecordLen(ts);
     int recordAmountInOneBlock = blockSize / recordLen;
