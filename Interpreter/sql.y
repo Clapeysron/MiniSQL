@@ -175,7 +175,7 @@ select_expr_list:
     | '*' { emit("81 *"); $$ = 1; }
     ;
 select_expr: 
-    NAME
+    NAME { emit("81 %s", $1); free($1); }
     ;
 opt_where:
     | WHERE expr { emit("WHERE"); }

@@ -30,12 +30,12 @@ string API::exec() {
 	string ret_string;
 	vector<int> ret_indexs;
 	stringstream sql_stream(sql);
-	    while(sql_stream >> buf)
-	    {
-	        cout << buf << ' ';
-	    }
-	    cout << endl;
-	    return "abc";
+	    //while(sql_stream >> buf)
+	    //{
+	    //    cout << buf << ' ';
+	    //}
+	    //cout << endl;
+	    //return "abc";
 	sql_stream >> buf; // STMT
 	sql_stream >> buf; // SELECT INSERT
 	if (buf == "SELECT") {

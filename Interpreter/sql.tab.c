@@ -63,7 +63,7 @@
 
 /* Copy the first part of user declarations.  */
 /* Line 371 of yacc.c  */
-#line 1 ".\\sql.y"
+#line 1 "sql.y"
 
 #include <stdlib.h>
 #include <stdarg.h>
@@ -157,7 +157,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 387 of yacc.c  */
-#line 12 ".\\sql.y"
+#line 12 "sql.y"
 
 	int intval;
 	double floatval;
@@ -1491,337 +1491,343 @@ yyreduce:
     {
         case 4:
 /* Line 1792 of yacc.c  */
-#line 81 ".\\sql.y"
+#line 81 "sql.y"
     { emit("STMT"); }
     break;
 
   case 5:
 /* Line 1792 of yacc.c  */
-#line 84 ".\\sql.y"
+#line 84 "sql.y"
     { emit("DELETE TABLE %s", (yyvsp[(3) - (4)].strval)); free((yyvsp[(3) - (4)].strval)); }
     break;
 
   case 6:
 /* Line 1792 of yacc.c  */
-#line 89 ".\\sql.y"
+#line 89 "sql.y"
     { emit("STMT"); }
     break;
 
   case 7:
 /* Line 1792 of yacc.c  */
-#line 92 ".\\sql.y"
+#line 92 "sql.y"
     { emit("INSERT %s", (yyvsp[(3) - (5)].strval)); free((yyvsp[(3) - (5)].strval)); }
     break;
 
   case 8:
 /* Line 1792 of yacc.c  */
-#line 95 ".\\sql.y"
+#line 95 "sql.y"
     { emit("VALUES %d", (yyvsp[(2) - (3)].intval)); (yyval.intval) = 1; }
     break;
 
   case 9:
 /* Line 1792 of yacc.c  */
-#line 98 ".\\sql.y"
+#line 98 "sql.y"
     { (yyval.intval) = 1; }
     break;
 
   case 10:
 /* Line 1792 of yacc.c  */
-#line 99 ".\\sql.y"
+#line 99 "sql.y"
     { (yyval.intval) = (yyvsp[(1) - (3)].intval) + 1; }
     break;
 
   case 11:
 /* Line 1792 of yacc.c  */
-#line 104 ".\\sql.y"
+#line 104 "sql.y"
     { emit("STMT"); }
     break;
 
   case 12:
 /* Line 1792 of yacc.c  */
-#line 107 ".\\sql.y"
+#line 107 "sql.y"
     { emit("UPDATE TABLE %s", (yyvsp[(2) - (5)].strval)); }
     break;
 
   case 13:
 /* Line 1792 of yacc.c  */
-#line 111 ".\\sql.y"
+#line 111 "sql.y"
     { emit("ASSIGN %s", (yyvsp[(1) - (3)].strval)); free((yyvsp[(1) - (3)].strval)); (yyval.intval) = 1; }
     break;
 
   case 14:
 /* Line 1792 of yacc.c  */
-#line 116 ".\\sql.y"
+#line 116 "sql.y"
     { emit("STMT"); }
     break;
 
   case 15:
 /* Line 1792 of yacc.c  */
-#line 120 ".\\sql.y"
+#line 120 "sql.y"
     { emit("CREATE %s %d", (yyvsp[(3) - (6)].strval), (yyvsp[(5) - (6)].intval)); free((yyvsp[(3) - (6)].strval)); }
     break;
 
   case 16:
 /* Line 1792 of yacc.c  */
-#line 123 ".\\sql.y"
+#line 123 "sql.y"
     { emit("STMT"); }
     break;
 
   case 17:
 /* Line 1792 of yacc.c  */
-#line 127 ".\\sql.y"
+#line 127 "sql.y"
     { emit("CREATEINDEX %s %s %d", (yyvsp[(3) - (8)].strval), (yyvsp[(5) - (8)].strval), (yyvsp[(7) - (8)].intval)); free((yyvsp[(3) - (8)].strval)); free((yyvsp[(5) - (8)].strval)); }
     break;
 
   case 18:
 /* Line 1792 of yacc.c  */
-#line 130 ".\\sql.y"
+#line 130 "sql.y"
     {(yyval.intval) = (yyvsp[(1) - (1)].intval); }
     break;
 
   case 19:
 /* Line 1792 of yacc.c  */
-#line 131 ".\\sql.y"
+#line 131 "sql.y"
     { (yyval.intval) = -1; }
     break;
 
   case 20:
 /* Line 1792 of yacc.c  */
-#line 134 ".\\sql.y"
+#line 134 "sql.y"
     { (yyval.intval) = 1; }
     break;
 
   case 21:
 /* Line 1792 of yacc.c  */
-#line 135 ".\\sql.y"
+#line 135 "sql.y"
     { (yyval.intval) = (yyvsp[(1) - (3)].intval) + 1; }
     break;
 
   case 22:
 /* Line 1792 of yacc.c  */
-#line 138 ".\\sql.y"
+#line 138 "sql.y"
     { emit("ENDCOL"); }
     break;
 
   case 23:
 /* Line 1792 of yacc.c  */
-#line 139 ".\\sql.y"
+#line 139 "sql.y"
     { emit("%d %s", (yyvsp[(3) - (4)].intval), (yyvsp[(2) - (4)].strval)); free((yyvsp[(2) - (4)].strval)); }
     break;
 
   case 24:
 /* Line 1792 of yacc.c  */
-#line 142 ".\\sql.y"
+#line 142 "sql.y"
     { (yyval.intval) = 0; }
     break;
 
   case 25:
 /* Line 1792 of yacc.c  */
-#line 143 ".\\sql.y"
+#line 143 "sql.y"
     { emit("ATTR_NOTNULL"); (yyval.intval) = (yyvsp[(1) - (3)].intval) + 1; }
     break;
 
   case 26:
 /* Line 1792 of yacc.c  */
-#line 144 ".\\sql.y"
+#line 144 "sql.y"
     { emit("ATTR_PRIKEY"); (yyval.intval) = (yyvsp[(1) - (3)].intval) + 1; }
     break;
 
   case 27:
 /* Line 1792 of yacc.c  */
-#line 145 ".\\sql.y"
+#line 145 "sql.y"
     { emit("ATTR_UNIQUE"); (yyval.intval) = (yyvsp[(1) - (2)].intval) + 1; }
     break;
 
   case 28:
 /* Line 1792 of yacc.c  */
-#line 148 ".\\sql.y"
+#line 148 "sql.y"
     { (yyval.intval) = 0; }
     break;
 
   case 29:
 /* Line 1792 of yacc.c  */
-#line 149 ".\\sql.y"
+#line 149 "sql.y"
     { (yyval.intval) = (yyvsp[(2) - (3)].intval); }
     break;
 
   case 30:
 /* Line 1792 of yacc.c  */
-#line 153 ".\\sql.y"
+#line 153 "sql.y"
     { (yyval.intval) = 3000 + (yyvsp[(2) - (2)].intval); }
     break;
 
   case 31:
 /* Line 1792 of yacc.c  */
-#line 154 ".\\sql.y"
+#line 154 "sql.y"
     { (yyval.intval) = 4000 + (yyvsp[(2) - (2)].intval); }
     break;
 
   case 32:
 /* Line 1792 of yacc.c  */
-#line 155 ".\\sql.y"
+#line 155 "sql.y"
     { (yyval.intval) = 2000 + (yyvsp[(3) - (4)].intval); }
     break;
 
   case 33:
 /* Line 1792 of yacc.c  */
-#line 158 ".\\sql.y"
+#line 158 "sql.y"
     { emit(" %s", (yyvsp[(1) - (1)].strval)); free((yyvsp[(1) - (1)].strval)); (yyval.intval) = 1; }
     break;
 
   case 34:
 /* Line 1792 of yacc.c  */
-#line 159 ".\\sql.y"
+#line 159 "sql.y"
     { emit(" %s", (yyvsp[(3) - (3)].strval)); free((yyvsp[(3) - (3)].strval)); (yyval.intval) = (yyvsp[(1) - (3)].intval) + 1; }
     break;
 
   case 35:
 /* Line 1792 of yacc.c  */
-#line 166 ".\\sql.y"
+#line 166 "sql.y"
     { emit("STMT"); }
     break;
 
   case 36:
 /* Line 1792 of yacc.c  */
-#line 170 ".\\sql.y"
+#line 170 "sql.y"
     { emit("SELECT %d TABLE %s", (yyvsp[(2) - (5)].intval), (yyvsp[(4) - (5)].strval)); }
     break;
 
   case 37:
 /* Line 1792 of yacc.c  */
-#line 173 ".\\sql.y"
+#line 173 "sql.y"
     { (yyval.intval) = 1; }
     break;
 
   case 38:
 /* Line 1792 of yacc.c  */
-#line 174 ".\\sql.y"
+#line 174 "sql.y"
     {(yyval.intval) = (yyvsp[(1) - (3)].intval) + 1; }
     break;
 
   case 39:
 /* Line 1792 of yacc.c  */
-#line 175 ".\\sql.y"
+#line 175 "sql.y"
     { emit("81 *"); (yyval.intval) = 1; }
+    break;
+
+  case 40:
+/* Line 1792 of yacc.c  */
+#line 178 "sql.y"
+    { emit("81 %s", (yyvsp[(1) - (1)].strval)); free((yyvsp[(1) - (1)].strval)); }
     break;
 
   case 42:
 /* Line 1792 of yacc.c  */
-#line 181 ".\\sql.y"
+#line 181 "sql.y"
     { emit("WHERE"); }
     break;
 
   case 43:
 /* Line 1792 of yacc.c  */
-#line 188 ".\\sql.y"
+#line 188 "sql.y"
     { emit("STMT"); }
     break;
 
   case 44:
 /* Line 1792 of yacc.c  */
-#line 191 ".\\sql.y"
+#line 191 "sql.y"
     { emit("DROP %s", (yyvsp[(3) - (3)].strval)); free (yyvsp[(3) - (3)].strval); }
     break;
 
   case 45:
 /* Line 1792 of yacc.c  */
-#line 192 ".\\sql.y"
+#line 192 "sql.y"
     { emit("DROPINDEX %s %s", (yyvsp[(3) - (5)].strval), (yyvsp[(5) - (5)].strval));free (yyvsp[(3) - (5)].strval); free (yyvsp[(5) - (5)].strval); }
     break;
 
   case 46:
 /* Line 1792 of yacc.c  */
-#line 197 ".\\sql.y"
+#line 197 "sql.y"
     { emit("STMT"); }
     break;
 
   case 47:
 /* Line 1792 of yacc.c  */
-#line 200 ".\\sql.y"
+#line 200 "sql.y"
     { emit("SHOWTABLE"); }
     break;
 
   case 48:
 /* Line 1792 of yacc.c  */
-#line 201 ".\\sql.y"
+#line 201 "sql.y"
     {emit("SHOWSTATUS"); }
     break;
 
   case 49:
 /* Line 1792 of yacc.c  */
-#line 205 ".\\sql.y"
+#line 205 "sql.y"
     { emit("STMT"); }
     break;
 
   case 50:
 /* Line 1792 of yacc.c  */
-#line 208 ".\\sql.y"
+#line 208 "sql.y"
     {emit("EXEC %s",(yyvsp[(2) - (2)].strval)); free((yyvsp[(2) - (2)].strval)); }
     break;
 
   case 51:
 /* Line 1792 of yacc.c  */
-#line 209 ".\\sql.y"
+#line 209 "sql.y"
     {emit("EXEC %s.%s",(yyvsp[(2) - (4)].strval),(yyvsp[(4) - (4)].strval)); free((yyvsp[(2) - (4)].strval));free((yyvsp[(4) - (4)].strval));}
     break;
 
   case 52:
 /* Line 1792 of yacc.c  */
-#line 214 ".\\sql.y"
+#line 214 "sql.y"
     { emit("STMT"); }
     break;
 
   case 53:
 /* Line 1792 of yacc.c  */
-#line 217 ".\\sql.y"
+#line 217 "sql.y"
     { emit("EXIT"); }
     break;
 
   case 54:
 /* Line 1792 of yacc.c  */
-#line 223 ".\\sql.y"
+#line 223 "sql.y"
     { emit("BETWEEN"); }
     break;
 
   case 55:
 /* Line 1792 of yacc.c  */
-#line 227 ".\\sql.y"
+#line 227 "sql.y"
     { emit("81 %s", (yyvsp[(1) - (1)].strval)); free((yyvsp[(1) - (1)].strval)); }
     break;
 
   case 56:
 /* Line 1792 of yacc.c  */
-#line 228 ".\\sql.y"
+#line 228 "sql.y"
     { emit("82 %s", (yyvsp[(1) - (1)].strval)); free((yyvsp[(1) - (1)].strval)); }
     break;
 
   case 57:
 /* Line 1792 of yacc.c  */
-#line 229 ".\\sql.y"
+#line 229 "sql.y"
     { emit("83 %d", (yyvsp[(1) - (1)].intval)); }
     break;
 
   case 58:
 /* Line 1792 of yacc.c  */
-#line 230 ".\\sql.y"
+#line 230 "sql.y"
     { emit("84 %g", (yyvsp[(1) - (1)].floatval)); }
     break;
 
   case 59:
 /* Line 1792 of yacc.c  */
-#line 234 ".\\sql.y"
+#line 234 "sql.y"
     { emit("AND"); }
     break;
 
   case 60:
 /* Line 1792 of yacc.c  */
-#line 235 ".\\sql.y"
+#line 235 "sql.y"
     { emit("CMP %d", (yyvsp[(2) - (3)].subtok)); }
     break;
 
 
 /* Line 1792 of yacc.c  */
-#line 1825 "sql.tab.c"
+#line 1831 "sql.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2053,7 +2059,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 238 ".\\sql.y"
+#line 238 "sql.y"
 
 
 char sql_from_bison[1000];
