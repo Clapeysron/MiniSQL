@@ -217,15 +217,31 @@ int RecordManager::insertIntoTable(TableStruct &ts, char *data){
 //    return tmp;
 //}
 
-bool RecordManager::selectAll(TableStruct &ts, vector<char *>& result){
+bool RecordManager::selectAll(TableStruct &ts, vector<string> &result){
     int recordLen = getRecordLen(ts);
     int recordAmountInOneBlock = blockSize / recordLen;
     int blockAmount = (ts.recordAmount - 1) / recordAmountInOneBlock + 1;
-    string filename = GET_FILENAME(ts.name);
+    std::string filename = GET_FILENAME(ts.name);
     result.clear();
 
     char* block = new char[blockSize];
-
+    std::vector<int> width;
+    string newline = "+";
+    string secondline = "|";
+    if(ts.recordAmount != 0){
+        for (int i = 0; i < ts.attrs.size(); ++i) {
+            width.push_back(ts.attrs[i].length);
+            string* space = new string(ts.attrs[i].length, "-");
+            newline = newline + *(space) + "+\n";
+            secondline += ts.attrs[i].name;
+            string* columnSpace = new string(ts.attrs[i].length - ts.attrs[i].name.length(), " ");
+            secondline += *columnSpace + "|";
+        }
+    }
+    secondline += "\n";
+    result.push_back(newline);
+    result.push_back(secondline);
+    result.push_back(newline);
     int currentBlock = -1;
     for (int i = 0; i < ts.recordAmount; ++i) {
         if(i / recordAmountInOneBlock != currentBlock){
@@ -236,10 +252,22 @@ bool RecordManager::selectAll(TableStruct &ts, vector<char *>& result){
         int j = i % recordAmountInOneBlock;
 
         char *target = new char[recordLen]; // this target is also needed to be freed in the higher place.
-        memcpy(target, block + j * recordLen, (size_t)recordLen);
-        result.push_back(target);
+        memcpy(target, block + j * recordLen + 1, (size_t)recordLen);
+        string* then = new string("|");
+        for (int k = 0; k < ts.attrs.size(); ++k) {
+            string* this_line = new string(target);
+            string* this_space = new string(ts.attrs[i].length - (*this_line).length(), " ");
+            *(then) = *(then) + *(this_line) + *(this_space) + "|";
+            target += ts.attrs[i].length;
+        }
+        *(then) += "\n";
+        result.push_back(*(then));
+        result.push_back(newline);
+        delete[] target;
     }
+    result.push_back(newline);
     delete[] block;
+    
     return true;
 	
 }
