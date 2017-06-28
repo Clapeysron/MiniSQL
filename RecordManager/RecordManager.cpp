@@ -217,6 +217,33 @@ int RecordManager::insertIntoTable(TableStruct &ts, char *data){
 //    return tmp;
 //}
 
+bool RecordManager::selectAll(TableStruct &ts, vector<char *> result){
+    int recordLen = getRecordLen(ts);
+    int recordAmountInOneBlock = blockSize / recordLen;
+    int blockAmount = (ts.recordAmount - 1) / recordAmountInOneBlock + 1;
+    string filename = GET_FILENAME(ts.name);
+    result.clear();
+
+    char* block = new char[blockSize];
+
+    int currentBlock = -1;
+    for (int i = 0; i < ts.recordAmount; ++i) {
+        if(i / recordAmountInOneBlock != currentBlock){
+            currentBlock = i / recordAmountInOneBlock;
+            bm.readDataFromFile(filename, currentBlock, block);
+        }
+
+        int j = i % recordAmountInOneBlock;
+
+        char *target = new char[recordLen]; // this target is also needed to be freed in the higher place.
+        memcpy(target, block + j * recordLen, (size_t)recordLen);
+        result.push_back(target);
+    }
+    delete[] block;
+    return true;
+
+}
+
 bool RecordManager::selectRecordWithCondition(TableStruct &ts, vector<int> &scope, vector<int> &results, int &comparison_type, int &type_1, string &comp_1, int &type_2, string comp_2){
     int recordLen = getRecordLen(ts);
     int recordAmountInOneBlock = blockSize / recordLen;
