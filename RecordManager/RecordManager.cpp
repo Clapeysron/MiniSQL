@@ -36,7 +36,7 @@ bool RecordManager::isConditionSatisfied(TableStruct &ts, Condition &con, char *
     // make sure that the API module will leave n+1 bytes for char(n)
     // and fill the unused bytes with 0, so no extra check here
     char *bufarea = new char[length];
-    std::memcpy(bufarea, str + start, length);
+    std::memcpy(bufarea, str + start, (size_t) length);
 
     // if the comprasion on particular type failed,
     // the COMPRASION macro returns false
@@ -49,14 +49,14 @@ bool RecordManager::isConditionSatisfied(TableStruct &ts, Condition &con, char *
         }
             break;
         case INT: {
-            string valb = con._int;
-            string vala = bufarea;
+            int valb = con._int;
+            int vala = atoi(bufarea);
             COMPRASION;
         }
             break;
         case DOUBLE: {
-            string valb = con._flo;
-            string vala = bufarea;
+            float valb = con._flo;
+            float vala = atof(bufarea);
             COMPRASION;
         }
             break;
