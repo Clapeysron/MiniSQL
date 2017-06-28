@@ -835,9 +835,10 @@ string API::show_status() {
 	for (auto i = tableNames.begin(); i != tableNames.end(); i++) {
 		std::cout << *i << std::endl;
 		CM.show_fields(*i);
+		std::cout << IM.get_real_record_amount(*i) << std::endl;
 		std::cout << std::endl;
-		IM.get_record_size(*i);
 	}
+
 	//CM.show_fields("test");
 	string ret_string;
 	ret_string += "Status flag in Managers\n";

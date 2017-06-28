@@ -469,7 +469,15 @@ private:
 			for (size_t i = 0; i < real_records_num; i++) {
 				size_t record_amount;
 				std::string table_name;
-				cis >> table_name >> record_amount;
+
+				if (cis.remain() > sizeof(record_amount) + sizeof(table_name)) {
+					cis >> table_name >> record_amount;
+				} else {
+					block_count++;
+					cis = CharInStream(allBlocks[block_count], block_size);
+					cis >> table_name >> record_amount;
+				}
+
 				std::vector<record_ptr> real_records;
 				for (size_t i = 0; i < record_amount; i++) {
 					if (cis.remain() > sizeof(record_ptr)) {
@@ -486,8 +494,8 @@ private:
 
 				}
 				_real_record_ptrs.emplace(table_name, real_records);
-				block_count++;
-				cis = CharInStream(allBlocks[block_count], block_size);
+				/*	block_count++;
+					cis = CharInStream(allBlocks[block_count], block_size);*/
 			}
 
 			for (size_t i = 0; i < allBlocks.size(); i++) {
@@ -553,7 +561,16 @@ private:
 
 		couts << _real_record_ptrs.size();
 		for (auto i = _real_record_ptrs.cbegin(); i != _real_record_ptrs.cend(); i++) {
-			couts << i->first << i->second.size();
+
+			if (couts.remain() > sizeof(i->first) + sizeof(i->second.size())) {
+				couts << i->first << i->second.size();
+			} else {
+				BufferManager::Instance().writeDataToFile(_fileName, block_index, buff);
+				couts.reset();
+				block_index++;
+				couts << i->first << i->second.size();
+			}
+
 			for (auto j = i->second.cbegin(); j != i->second.cend(); j++) {
 				if (couts.remain() > sizeof(*j)) {
 					couts << *j;
@@ -564,8 +581,8 @@ private:
 					couts << *j;
 				}
 			}
-			/*		couts.reset();
-					block_index++;*/
+			/*	couts.reset();
+				block_index++;*/
 		}
 
 		BufferManager::Instance().writeDataToFile(_fileName, block_index, buff);

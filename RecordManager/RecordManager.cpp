@@ -253,22 +253,23 @@ bool RecordManager::selectAll(TableStruct &ts, vector<string> &result){
         int j = i % recordAmountInOneBlock;
 
         char *target = new char[recordLen]; // this target is also needed to be freed in the higher place.
+		char * target_begin = target;
         memcpy(target, block + j * recordLen, (size_t)recordLen);
         string then = "|"; 
         for (int k = 0; k < ts.attrs.size(); ++k) {
             string this_line(target);
-            string this_space(ts.attrs[i].length - this_line.length(), ' ');
+            string this_space(ts.attrs[k].length - this_line.length(), ' ');
             then = then + this_line + this_space + "|";
-            target += ts.attrs[i].length;
+            target += ts.attrs[k].length;
         }
         then += "\n";
         result.push_back(then);
-        result.push_back(newline);
-        delete[] target;
+        //result.push_back(newline);
+        delete[] target_begin;
     }
-    result.push_back(newline);
+    
     delete[] block;
-
+	result.push_back(newline);
     return true;
 
 }
