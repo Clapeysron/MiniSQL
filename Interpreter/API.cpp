@@ -10,6 +10,10 @@
 #include <algorithm>
 
 
+#define CHARS 82
+#define INT 83
+#define FLOAT 84
+
 RecordManager API::RM = RecordManager(BufferManager::Instance(), 4096);
 CatalogManager& CM = CatalogManager::Instance();
 IndexManager& IM = IndexManager::Instance();
@@ -47,7 +51,7 @@ string API::exec() {
 			vector<string> col_list;
 			for (int i = 0; i < select_list_num; i++) {
 				sql_stream >> buf; // NAME
-				sql_stream >> buf; // colname
+				//sql_stream >> buf; // colname
 				col_list.push_back(buf);
 			}
 			ret_string = select_all(table_name, col_list);
@@ -334,7 +338,7 @@ string API::select_all(string table_name, vector<string> col_list) {
 	// string RM.select_all(table_name);
 	// string > out_string
 	if (CM.have_table(table_name)) {
-		if (col_list.size()==1&&col_list[0]=="*") {
+		if (col_list.size() == 1 && col_list[0] == "*") {
 			std::vector<AttrInfo> ats;
 			const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
 			for (size_t i = 0; i < fields.size(); i++) {
@@ -344,24 +348,28 @@ string API::select_all(string table_name, vector<string> col_list) {
 			}
 			TableStruct ts(table_name, IM.get_record_size(table_name), ats);
 			//RM.selectRecord(table_name, )
-		}
-		else {
+			std::vector<char*> buff;
+			RM.selectAll(ts, buff);
+			for (size_t i = 0; i < buff.size(); i++) {
+				ret_string += std::string(buff[i]);
+				ret_string += "\n";
+				// TODO: be implemented by melody
+			}
+			for (size_t i = 0; i < buff.size(); i++) {
+				delete[] buff[i];
+			}
+		} else {
 			ret_string += "to be done\n";
 		}
 	}
-	/*ret_string += "+-------+-------+\n";
-	ret_string += "| s_ID  | i_ID  |\n";
-	ret_string += "+-------+-------+\n";
-	ret_string += "| 12345 | 10101 |\n";
-	ret_string += "+-------+-------+\n";
-	ret_string += "9 rows in set (0.00 sec)\n";*/
+	
 	return ret_string;
 }
 
 string API::select(string table_name, vector<string> col_list, vector<int> indexs) {
 	string ret_string;
 	// TODO: API select_all
-	
+
 	if (CM.have_table(table_name)) {
 		if (CM.have_column(table_name, col_list)) {
 
@@ -385,7 +393,7 @@ string API::select(string table_name, vector<string> col_list, vector<int> index
 			for (size_t i = 0; i < buff.size(); i++) {
 				delete[] buff[i];
 			}
-			
+
 		} else {
 			ret_string += "Error: have no such column\n";
 		}
@@ -620,10 +628,42 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 			}
 
 			RM.insertIntoTable(ts, data);
-			//TODO: implement delete indexManager 
-			//IM.insert("", "", std::vector<int>(), std::vector<int>());
+			int startPoint = 0;
+			for (size_t i = 0; i < ts.attrs.size(); i++) {
+				std::string key_data(data + startPoint);
+				stringstream ss(key_data);
+				if (ts.attrs[i].index) {
+					switch (ts.attrs[i].type) {
+					case INT: {
+						int key;
+						ss >> key;
+						IM.insert(table_name, ts.attrs[i].name, key);
+						break;
+					}
+					case FLOAT: {
+						float key;
+						ss >> key;
+						IM.insert(table_name, ts.attrs[i].name, key);
+						break;
+					}
+					case CHARS: {
+						std::string key;
+						ss >> key;
+						IM.insert(table_name, ts.attrs[i].name, key);
+						break;
+					}
+					default:
+						std::cout << "Error: insert type error" << std::endl;
+						break;
+					}
 
-			//No need for delete[]data because insertIntoData have done this;
+					startPoint += ts.attrs[i].length;
+				}
+
+
+			}
+			IM.insert_real_index(table_name);
+			delete[] data;
 		} else {
 			ret_string += "Error: values' type doesn't match table'" + table_name + "'\n";
 			return ret_string;
@@ -634,7 +674,7 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 		return ret_string;
 	}
 
-	ret_string += "Query OK, 3 row affected (0.02 sec)\n";
+	ret_string += "Query OK, 1 row affected (0.02 sec)\n";
 	return ret_string;
 }
 
@@ -728,9 +768,9 @@ string API::drop_table(string table_name) {
 	string ret_string;
 	if (CM.have_table(table_name)) {
 		IM.drop_table(table_name);  // IM must be used before CM for it will use CM to get index message
-		
+
 		CM.drop_table(table_name);
-		
+
 		RM.dropTable(table_name);
 		//RM.drop_table();
 		// TODO: RM drop table
@@ -753,7 +793,7 @@ string API::drop_index(string table_name, string index_name) {
 			// notice that IM should be called first, delete indices then delete table catalog for it will use catalog manage first
 			IM.drop_index(t, index_name);
 			CM.drop_index_with_index_name(table_name, index_name);
-			
+
 			ret_string += "Query OK, 0 rows affected (0.01 sec)\n";
 		} else {
 			ret_string += "ERROR: have no such index\n";

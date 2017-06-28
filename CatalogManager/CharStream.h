@@ -87,7 +87,7 @@ public:
 	}
 
 	void reset() {
-		this->setg(this->pbase(), this->pbase(), this->epptr());
+		this->setp(this->pbase(), this->pbase(), this->epptr());
 	}
 
 };

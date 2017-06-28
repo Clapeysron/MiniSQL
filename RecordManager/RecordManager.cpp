@@ -217,7 +217,7 @@ int RecordManager::insertIntoTable(TableStruct &ts, char *data){
 //    return tmp;
 //}
 
-bool RecordManager::selectAll(TableStruct &ts, vector<char *> result){
+bool RecordManager::selectAll(TableStruct &ts, vector<char *>& result){
     int recordLen = getRecordLen(ts);
     int recordAmountInOneBlock = blockSize / recordLen;
     int blockAmount = (ts.recordAmount - 1) / recordAmountInOneBlock + 1;
@@ -241,7 +241,7 @@ bool RecordManager::selectAll(TableStruct &ts, vector<char *> result){
     }
     delete[] block;
     return true;
-
+	
 }
 
 bool RecordManager::selectRecordWithCondition(TableStruct &ts, vector<int> &scope, vector<int> &results, int &comparison_type, int &type_1, string &comp_1, int &type_2, string comp_2){
