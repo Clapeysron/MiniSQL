@@ -294,5 +294,7 @@ __pycache__/
 *.vcxproj
 *.vcxproj.filters
 Interpreter/unistd.h
+Interpreter/data/
+Interpreter/*.exe
 
 # End of https://www.gitignore.io/api/visualstudio
