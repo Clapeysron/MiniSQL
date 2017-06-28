@@ -70,6 +70,7 @@ public:
     int deleteRecord(TableStruct &ts, vector<int> &scope, vector<char *> &moved);
     bool selectRecordWithCondition(TableStruct &ts, vector<int> &scope, vector<int> &results, int &comparison_type, int &type_1, string &comp_1, int &type_2, string comp_2);
     bool selectRecord(TableStruct &ts, vector<int> &scope, vector<char *> &result);
+  	bool selectAll(TableStruct &ts, vector<char *> result);
     bool selectAttribute(TableStruct &ts, string col, vector<char *> &values);
 
     RecordManager(BufferManager &bm, int blockSize):bm(bm), blockSize(blockSize){
