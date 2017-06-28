@@ -13,6 +13,62 @@ int RecordManager::getRecordLen(TableStruct &ts){
     return length;
 }
 
+bool RecordManager::isConditionSatisfied(TableStruct &ts, Condition &con, char *str) {
+
+    // calculate the position of the named attribute in the binary data
+    // this can be done before this main loop for each conditions
+    // i will leave it for the sake of simplicity
+    vector<AttrInfo> &attrs = ts.attrs;
+    int start = 0;
+    int length = 0;
+    int type = 0;
+    int pointer = 0;
+    for (size_t i = 0; i < attrs.size(); i++) {
+        if (attrs[i].name == con.column) {
+            start = pointer;
+            length = attrs[i].length;
+            type = attrs[i].type;
+            break;
+        }
+        pointer = pointer + attrs[i].length;
+    }
+
+    // make sure that the API module will leave n+1 bytes for char(n)
+    // and fill the unused bytes with 0, so no extra check here
+    char *bufarea = new char[length];
+    std::memcpy(bufarea, str + start, length);
+
+    // if the comprasion on particular type failed,
+    // the COMPRASION macro returns false
+    // so if it pass through, the condition holds
+    switch (type) {
+        case STR: {
+            string &valb = con._str;
+            string vala = bufarea;
+            COMPRASION;
+        }
+            break;
+        case INT: {
+            string valb = con._int;
+            string vala = bufarea;
+            COMPRASION;
+        }
+            break;
+        case DOUBLE: {
+            string valb = con._flo;
+            string vala = bufarea;
+            COMPRASION;
+        }
+            break;
+        default:
+            break;
+    }
+    delete[] bufarea;
+
+    // it must be a long way to get here, but everything is fine
+    return true;
+}
+
 bool RecordManager::isDup(TableStruct &ts, char *record){
     int recordLen = getRecordLen(ts);
     int recordAmountInOneBlock = blockSize / recordLen;
@@ -24,7 +80,7 @@ bool RecordManager::isDup(TableStruct &ts, char *record){
 
     int pos = 0;
     for(size_t i = 0; i < attrs.size(); ++i) {
-        if(attrs[i].index == 1 || attrs[i].unique ==1){
+        if(attrs[i].unique ==1){
             uniqueList.push_back(pos);
             uniqueList.push_back(pos + attrs[i].length);
         }
@@ -101,64 +157,156 @@ int RecordManager::insertIntoTable(TableStruct &ts, char *data){
     return ts.recordAmount++; // the record amount will add one and the index of this record will be returned.
 }
 
-int RecordManager::deleteRecord(TableStruct &ts, vector<int> &scope, vector<int> &moved){
-    // I assume that the scope is the final list of records which will be deleted. So Index Manager can update the
-    // index using the vector<int> scope. I just need to delete these index and I will return the moved records.
-    // My strategy of delete records is swap it to the last block and I will delete the last records.
+//int RecordManager::deleteRecord(TableStruct &ts, vector<int> &scope, vector<int> &moved){
+//    // I assume that the scope is the final list of records which will be deleted. So Index Manager can update the
+//    // index using the vector<int> scope. I just need to delete these index and I will return the moved records.
+//    // My strategy of delete records is swap it to the last block and I will delete the last records.
+//    int recordLen = getRecordLen(ts);
+//    int recordAmountInOneBlock = blockSize / recordLen;
+//    int blockAmount = (ts.recordAmount - 1) / recordAmountInOneBlock + 1;
+//    int currentAmount = ts.recordAmount;
+//    string filename = GET_FILENAME(ts.name);
+//
+//    char *block = new char[blockSize];
+//
+//    int currentBlock = -1;
+//    bool isModified = false;
+//
+//    for(int i = (int)scope.size() - 1; i >= 0 ; i--){
+//        if(scope[i] / recordAmountInOneBlock != currentAmount){
+//            if(isModified && currentAmount > currentBlock * recordAmountInOneBlock){
+//                bm.writeDataToFile(filename, currentBlock, block);
+//            }
+//
+//            currentBlock = scope[i] / recordAmountInOneBlock;
+//            bm.readDataFromFile(filename, currentBlock, block);
+//            isModified = false;
+//        }
+//
+//        int j = scope[i] % recordAmountInOneBlock;
+//        char *buf = new char[blockSize];
+//        bm.readDataFromFile(filename, (currentAmount - 1) / recordAmountInOneBlock, buf);
+//        int index = (currentAmount - 1) % recordAmountInOneBlock;
+//
+//        memcpy(block + j * recordLen, buf + index * recordLen, (size_t)recordLen);
+//
+//
+//        currentAmount--;
+//        if(currentAmount % recordAmountInOneBlock == 0){
+//            bm.deleteLastBlockOfFile(filename);
+//        }
+//        delete[] buf;
+//        isModified = true;
+//        if(currentAmount != scope[i]){
+//            moved.push_back(currentAmount);
+//            moved.push_back(scope[i]);
+//        }
+//
+//    }
+//
+//    if(isModified && currentAmount > currentBlock * recordAmountInOneBlock){
+//        bm.writeDataToFile(filename, currentBlock, block);
+//    }
+//
+//    delete[] block;
+//
+//    int tmp = ts.recordAmount - currentAmount;
+//
+//    ts.recordAmount = currentAmount;
+//
+//    return tmp;
+//}
+
+bool RecordManager::selectRecordWithCondition(TableStruct &ts, vector<int> &scope, vector<int> &results, int &comparison_type, int &type_1, string &comp_1, int &type_2, string comp_2){
     int recordLen = getRecordLen(ts);
     int recordAmountInOneBlock = blockSize / recordLen;
     int blockAmount = (ts.recordAmount - 1) / recordAmountInOneBlock + 1;
-    int currentAmount = ts.recordAmount;
     string filename = GET_FILENAME(ts.name);
 
-    char *block = new char[blockSize];
-
-    int currentBlock = -1;
-    bool isModified = false;
-
-    for(int i = (int)scope.size() - 1; i >= 0 ; i--){
-        if(scope[i] / recordAmountInOneBlock != currentAmount){
-            if(isModified && currentAmount > currentBlock * recordAmountInOneBlock){
-                bm.writeDataToFile(filename, currentBlock, block);
-            }
-
-            currentBlock = scope[i] / recordAmountInOneBlock;
-            bm.readDataFromFile(filename, currentBlock, block);
-            isModified = false;
+    results.clear();
+    Condition co;
+    co.op = comparison_type;
+    if(type_1 != COL){
+        return false;
+    }else{
+        co.column = comp_1;
+        switch(type_2){
+            case INT:
+                co._int = comp_2;
+                break;
+            case DOUBLE:
+                co._flo = comp_2;
+                break;
+            case STR:
+                co._str = comp_2;
+                break;
+            default:
+                return false;
         }
-
-        int j = scope[i] % recordAmountInOneBlock;
-        char *buf = new char[blockSize];
-        bm.readDataFromFile(filename, (currentAmount - 1) / recordAmountInOneBlock, buf);
-        int index = (currentAmount - 1) % recordAmountInOneBlock;
-
-        memcpy(block + j * recordLen, buf + index * recordLen, (size_t)recordLen);
-
-
-        currentAmount--;
-        if(currentAmount % recordAmountInOneBlock == 0){
-            bm.deleteLastBlockOfFile(filename);
-        }
-        delete[] buf;
-        isModified = true;
-        if(currentAmount != scope[i]){
-            moved.push_back(currentAmount);
-            moved.push_back(scope[i]);
-        }
-
     }
 
-    if(isModified && currentAmount > currentBlock * recordAmountInOneBlock){
-        bm.writeDataToFile(filename, currentBlock, block);
+    char* block = new char[blockSize];
+
+    int currentBlock = -1;
+    for (int i = 0; i < blockAmount; ++i) {
+        bm.readDataFromFile(filename, i, block);
+
+        for (int j = 0; (j < recordAmountInOneBlock) && (i * recordAmountInOneBlock + j < ts.recordAmount); ++j) {
+            if(isConditionSatisfied(ts, co, block + j * recordLen)){
+                results.push_back(i * recordAmountInOneBlock + j);
+            }
+        }
     }
 
     delete[] block;
+    return true;
+}
 
-    int tmp = ts.recordAmount - currentAmount;
+int RecordManager::deleteRecord(TableStruct &ts, vector<int> &scope, vector<char *> &moved) {
+    int recordLen = getRecordLen(ts);
+    int recordAmountInOneBlock = blockSize / recordLen;
+    int blockAmount = (ts.recordAmount - 1) / recordAmountInOneBlock + 1;
+    string filename = GET_FILENAME(ts.name);
 
-    ts.recordAmount = currentAmount;
+    moved.clear();
 
-    return tmp;
+    char* block = new char[blockSize];
+
+    int currentBlock = -1;
+    for (int i = 0; i < scope.size(); ++i) {
+        if(scope[i] / recordAmountInOneBlock != currentBlock){
+            currentBlock = scope[i] / recordAmountInOneBlock;
+            bm.readDataFromFile(filename, currentBlock, block);
+        }
+
+        int j = scope[i] % recordAmountInOneBlock;
+
+        *(block + j * recordLen) = 1;
+        bm.writeDataToFile(filename, currentBlock, block);
+        char* record = new char[recordLen];
+        char *buf = new char[100];
+        CharOutStream couts(buf, 100);
+        memcpy(record, (block + j * recordLen), (size_t) recordLen);
+        int currentPoint = 1;
+        for (int k = 0; k < ts.attrs.size(); ++k) {
+            if(ts.attrs[k].unique){
+                couts << ts.attrs[k].name << ts.attrs[k].type;
+                string* attrValue = new string(record + currentPoint);
+                couts << (string)*attrValue;
+                delete attrValue;
+            }
+            if(ts.attrs[k].type != STR){
+                currentPoint += (ts.attrs[k].type + 1);
+            }else{
+                currentPoint += ts.attrs[k].type;
+            }
+        }
+        delete[] record;
+        moved.push_back(buf);
+        // Remeber to delete the buf.
+    }
+    delete[] block;
+    return (int) scope.size();
 }
 
 bool RecordManager::selectRecord(TableStruct &ts, vector<int> &scope, vector<char *> &result){
