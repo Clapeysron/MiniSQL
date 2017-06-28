@@ -217,10 +217,13 @@ int RecordManager::insertIntoTable(TableStruct &ts, char *data){
 //    return tmp;
 //}
 
-bool RecordManager::selectAll(TableStruct &ts, vector<string> &result){
+bool RecordManager::selectAll(TableStruct &ts, vector<string> &result, vector<string> &col_list){
     int recordLen = getRecordLen(ts);
     int recordAmountInOneBlock = blockSize / recordLen;
     int blockAmount = (ts.recordAmount - 1) / recordAmountInOneBlock + 1;
+
+    vector<int> pointers;
+
     std::string filename = GET_FILENAME(ts.name);
     result.clear();
 
@@ -229,13 +232,22 @@ bool RecordManager::selectAll(TableStruct &ts, vector<string> &result){
     string newline = "+";
     string secondline = "|";
     if(ts.recordAmount != 0){
-        for (int i = 0; i < ts.attrs.size(); ++i) {
-            width.push_back(ts.attrs[i].length);
-            string space((unsigned long) ts.attrs[i].length, '-');
-            newline = newline + space + "+";
-            secondline += ts.attrs[i].name;
-            string columnSpace(ts.attrs[i].length - ts.attrs[i].name.length(), ' ');
-            secondline += columnSpace + "|";
+        for (int j = 0; j < col_list.size(); ++j) {
+            int start = 0;
+            for (int i = 0; i < ts.attrs.size(); ++i) {
+                if(ts.attrs[i].name != col_list[j]){
+                    start += ts.attrs[i].length;
+                    continue;
+                }
+                pointers.push_back(start);
+                pointers.push_back(ts.attrs[i].length);
+                width.push_back(ts.attrs[i].length);
+                string space((unsigned long) ts.attrs[i].length, '-');
+                newline = newline + space + "+";
+                secondline += ts.attrs[i].name;
+                string columnSpace(ts.attrs[i].length - ts.attrs[i].name.length(), ' ');
+                secondline += columnSpace + "|";
+            }
         }
     }
     newline += "\n";
@@ -254,12 +266,11 @@ bool RecordManager::selectAll(TableStruct &ts, vector<string> &result){
 
         char *target = new char[recordLen]; // this target is also needed to be freed in the higher place.
         memcpy(target, block + j * recordLen, (size_t)recordLen);
-        string then = "|"; 
-        for (int k = 0; k < ts.attrs.size(); ++k) {
-            string this_line(target);
+        string then = "|";
+        for (int k = 0; k < (pointers.size() / 2); ++k) {
+            string this_line(target + pointers[k * 2]);
             string this_space(ts.attrs[i].length - this_line.length(), ' ');
             then = then + this_line + this_space + "|";
-            target += ts.attrs[i].length;
         }
         then += "\n";
         result.push_back(then);
