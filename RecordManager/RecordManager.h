@@ -32,8 +32,8 @@ public:
     int op;
 
     string _str;
-    string _int;
-    string _flo;
+    int _int;
+    float _flo;
 };
 #define COL 81
 #define STR 82
