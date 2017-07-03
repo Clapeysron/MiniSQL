@@ -91,7 +91,7 @@ bool BufferManager::readDatas(string filename, vector<char *> &results){
         results.push_back(block);
     }
 	return true;
-	//TODO: to be fixed to return a proper bool value
+	
 }
 
 bool BufferManager::writeDataToFile(string filename, int blockIndex, char *writeBuffer){

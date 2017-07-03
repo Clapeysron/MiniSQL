@@ -4,7 +4,7 @@
 #include "../BufferManager/BufferManager.h"
 
 
-//BufferManager CatalogManager::BM = BufferManager(4096, 256);`
+
 
 TableInfo::TableInfo(const std::vector<FieldInfo>& fields, const std::string & name, const size_t & primary) :
 	_fields(fields),
@@ -97,10 +97,10 @@ TypeInfo TableInfo::get_type(std::string fieldName) {
 
 	std::cerr << "CatalogManager: have no such fieldName" << std::endl;
 	return TypeInfo(0, 0);
-	// TODO: throw an error
+	
 }
 
-const std::vector<std::pair<Type, std::string>>& TableInfo::get_indices() {
+const std::vector<std::pair<Type, std::string>> TableInfo::get_indices() {
 	std::vector<std::pair<Type, std::string>> results;
 	for (size_t i = 0; i < _fields.size(); i++) {
 		std::string indexName = _fields[i].get_index();
@@ -111,7 +111,7 @@ const std::vector<std::pair<Type, std::string>>& TableInfo::get_indices() {
 	return results;
 }
 
-const std::pair<Type, std::string>& TableInfo::get_primary_index() {
+const std::pair<Type, std::string> TableInfo::get_primary_index() {
 
 	return std::make_pair(_fields[_primary].get_type().get_type(), _fields[_primary].get_index());
 }
@@ -164,7 +164,7 @@ void CatalogManager::create_table(const std::string & table_name, const std::vec
 	for (size_t i = 0; i < name_list.size(); i++) {
 		fields.emplace_back(TypeInfo(type_list[i], length_list[i]), unique_flag[i], name_list[i], nnull_flag[i], "");
 	}
-	//TODO:consider get primary flag as a size_t or int
+	
 	size_t primary_pos;
 	int flag = 0;
 	for (size_t i = 0; i < primary_flag.size(); i++) {

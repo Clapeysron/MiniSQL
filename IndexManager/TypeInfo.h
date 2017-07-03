@@ -88,7 +88,7 @@ public:
 		return -1;
 	}
 
-	Type get_type() {
+	Type get_type() const{
 		return _type;
 	}
 

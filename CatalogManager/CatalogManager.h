@@ -123,9 +123,9 @@ public:
 
 	TypeInfo get_type(std::string fieldName);
 
-	const std::vector<std::pair<Type, std::string>>& get_indices();
+	const std::vector<std::pair<Type, std::string>> get_indices();
 
-	const std::pair<Type, std::string>& get_primary_index();
+	const std::pair<Type, std::string> get_primary_index();
 
 	Type get_index_type_with_index_name(const std::string& indexName) {
 		for (size_t i = 0; i < _fields.size(); i++) {
@@ -195,10 +195,11 @@ public:
 		if (i != _tables.end()) {
 			return i->second;
 		} else {
-			//throw SomeError("Error: no such table '" + tableName + "'");
+		
 			std::cout << "Error: no such table '" + tableName + "'" << std::endl;
 			
 		}
+		return i->second;
 	}
 
 

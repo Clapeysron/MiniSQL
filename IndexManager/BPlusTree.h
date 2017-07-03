@@ -14,11 +14,13 @@ const std::string _fileName = "BPlusTree";
 
 template<typename T>
 class BPTNode {
+
+	
 	using record_ptr = int;   // RecordPtr is a int
 	using block_ptr = int; // the block number in the file
 	using key_type = T;
 
-private:
+public:
 	size_t _degree;
 	bool _is_root;
 	block_ptr _father;
@@ -27,11 +29,11 @@ private:
 public:
 	bool _isLeaf;
 	std::vector<block_ptr> _children;
-	std::vector<key_type> _keys;
+	std::vector<T> _keys;
 	std::vector<record_ptr> _records;
 	block_ptr _next;
 	block_ptr _blockNumber;
-	BPTNode(std::vector<key_type> keys, size_t degree, block_ptr father, block_ptr blockNumber, block_ptr next, bool isLeaf, std::vector<int> pointers) :
+	BPTNode(std::vector<T> keys, size_t degree, block_ptr father, block_ptr blockNumber, block_ptr next, bool isLeaf, std::vector<int> pointers) :
 		_keys(keys),
 		_degree(degree),
 		_father(father),
@@ -47,7 +49,7 @@ public:
 		}
 	}
 
-	BPTNode(std::vector<key_type> keys, block_ptr father, size_t degree, block_ptr blockNumber, bool isLeaf) :
+	BPTNode(std::vector<T> keys, block_ptr father, size_t degree, block_ptr blockNumber, bool isLeaf) :
 		_keys(keys),
 		_is_root(false),
 		_degree(degree),
@@ -96,6 +98,41 @@ public:
 		}
 		delete[] block;
 
+	}
+
+	BPTNode(block_ptr blockNum, bool isnew) :
+		_blockNumber(blockNum),
+		_changed(false) {
+		if (isnew) {
+
+		} else {
+			int blockSize = BufferManager::Instance().getBlockSize();
+			char* block = new char[blockSize];
+			BufferManager::Instance().readDataFromFile(_fileName, blockNum, block);
+			CharInStream cis(block, blockSize);
+			cis >> _degree >> _is_root >> _isLeaf >> _father;
+			size_t keys_num;
+			cis >> keys_num;
+			for (size_t i = 0; i < keys_num; i++) {
+				key_type temp;
+				cis >> temp;
+				_keys.push_back(temp);
+			}
+			if (_isLeaf) {
+				for (size_t i = 0; i < keys_num; i++) {
+					record_ptr temp;
+					cis >> temp;
+					_records.push_back(temp);
+				}
+			} else {
+				for (size_t i = 0; i < keys_num; i++) {
+					block_ptr temp;
+					cis >> temp;
+					_children.push_back(temp);
+				}
+			}
+			delete[] block;
+		}
 	}
 
 	BPTNode(const BPTNode& r) :
@@ -456,6 +493,23 @@ public:
 		root.set_root(true);
 	}
 
+	BPlusTree(const BPlusTree<T>& rhs) :
+		key_size(rhs.key_size),
+		_degree(rhs._degree),
+		_root_block_num(rhs._root_block_num),
+		keys_num(rhs.keys_num) {
+
+	}
+
+	BPlusTree(BPlusTree<T>&& rhs):
+		key_size(rhs.key_size),
+		_degree(rhs._degree),
+		_root_block_num(rhs._root_block_num),
+		keys_num(rhs.keys_num) {
+
+	}
+
+
 
 
 	BPTNode<T> find_leaf(const key_type& k) {
@@ -483,7 +537,7 @@ public:
 		}
 	}
 
-	static BPlusTree<T> create(const std::vector<std::pair<T, record_ptr>>& entities, size_t key_size) {
+	static BPlusTree<T> create(std::vector<std::pair<T, record_ptr>> entities, size_t key_size) {
 		size_t degree = (BufferManager::Instance().getBlockSize()
 			- sizeof(size_t)
 			- sizeof(bool)
@@ -494,38 +548,41 @@ public:
 
 		auto i = entities.begin();
 
+		BufferManager::Instance().createFile(_fileName);
 		int root_block_num = BufferManager::Instance().getNewBlockNum(_fileName);
-		BPTNode<T> root(root_block_num);
+		BPTNode<T> root(root_block_num, true);
 
 		//std::unique_ptr<BPTNode<T>>  father = &root;
 		//std::unique_ptr<BPTNode<T>> last = nullptr;
 		int father_num = root_block_num;
 		int last_num = -1;
 		while (i != entities.end()) {
-			std::vector<T> keys; keys.resize(degree);
-			std::vector<record_ptr> records; records.resize(degree);
-
-			for (auto j = i; j != entities.end() && j != i + degree; j++) {
+			std::vector<T> keys; 
+			keys.reserve(degree);
+			std::vector<record_ptr> records; 
+			records.reserve(degree);
+			auto j = i;
+			for (; j != entities.end() && j - i < degree; j++) {
 				keys.push_back((*j).first);
 				records.push_back((*j).second);
 			}
 			i = j;
 			//std::vector<key_type> keys, size_t degree, block_ptr father, block_ptr blockNumber, block_ptr next, bool isLeaf, std::vector<int> pointers;
-			int new_block_num = BufferManager::Instance().getNewBlockNum();
-			BPTNode<T> node = new BPTNode<T>(std::move(keys),
+			int new_block_num = BufferManager::Instance().getNewBlockNum(_fileName);
+			BPTNode<T> node ((keys),
 				degree,
 				father_num,
 				new_block_num,
 				(-1),
 				true,
-				std::move(records));
+				(records));
 
 			if (last_num != -1) {
 
 				root_block_num = BPTNode<T>(father_num).insert_key_children(keys[0], new_block_num);
 				BPTNode<T> last(last_num);
 				last._next = new_block_num;
-				father = last._father;
+				father_num = last._father;
 				last_num = new_block_num;
 
 			} else {

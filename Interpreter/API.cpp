@@ -30,12 +30,12 @@ string API::exec() {
 	string ret_string;
 	vector<int> ret_indexs;
 	stringstream sql_stream(sql);
-	    //while(sql_stream >> buf)
-	    //{
-	    //    cout << buf << ' ';
-	    //}
-	    //cout << endl;
-	    //return "abc";
+	//while(sql_stream >> buf)
+	//{
+	//    cout << buf << ' ';
+	//}
+	//cout << endl;
+	//return "abc";
 	sql_stream >> buf; // STMT
 	sql_stream >> buf; // SELECT INSERT
 	if (buf == "SELECT") {
@@ -57,9 +57,10 @@ string API::exec() {
 			ret_string = select_all(table_name, col_list);
 			return ret_string;
 		} else if (buf == "WHERE") {
+			vector<vector<int>> indexs_list;
 			while (buf != "81") {
 				sql_stream >> buf;
-				vector<vector<int>> indexs_list;
+
 				if (buf == "AND") {
 					sql_stream >> buf;
 					if (buf == "CMP") {
@@ -93,7 +94,7 @@ string API::exec() {
 					col_list.push_back(buf);
 				}
 				ret_indexs = indexs_list[0];
-				for (int i = 0; i < indexs_list.size(); i++) {
+				for (size_t i = 0; i < indexs_list.size(); i++) {
 					ret_indexs = and_indexs(ret_indexs, indexs_list[i]);
 				}
 				ret_string = select(table_name, col_list, ret_indexs);
@@ -173,7 +174,7 @@ string API::exec() {
 				sql_stream >> update_value;
 
 				ret_indexs = indexs_list[0];
-				for (int i = 0; i < indexs_list.size(); i++) {
+				for (size_t i = 0; i < indexs_list.size(); i++) {
 					ret_indexs = and_indexs(ret_indexs, indexs_list[i]);
 				}
 				ret_string = update_part(table_name, col_name, update_type, update_value, ret_indexs);
@@ -220,7 +221,7 @@ string API::exec() {
 					indexs_list.push_back(search_between(table_name, type_1, comp, type_2, between_1, type_3, between_2));
 				}
 				ret_indexs = indexs_list[0];
-				for (int i = 0; i < indexs_list.size(); i++) {
+				for (size_t i = 0; i < indexs_list.size(); i++) {
 					ret_indexs = and_indexs(ret_indexs, indexs_list[i]);
 				}
 				ret_string = delete_part(table_name, ret_indexs);
@@ -332,24 +333,34 @@ string API::exec() {
 
 string API::select_all(string table_name, vector<string> col_list) {
 	string ret_string;
-	std::cout << "fdskhfhdsafhaifdsa" << std::endl;
+	std::cout << "select_all" << std::endl;
 	if (CM.have_table(table_name)) {
 
-		std::vector<AttrInfo> ats;
-		const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
-		for (size_t i = 0; i < fields.size(); i++) {
-			int length = fields[i].get_type_magic_num() == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
-			bool index = fields[i].get_index() == "" ? false : true;
-			ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
+		if (!((col_list.size() == 1 && col_list.front() == "*") || CM.find_table(table_name).have_columns(col_list))) {
+			ret_string += "Error: have no such columns\n";
+		} else {
+			std::vector<AttrInfo> ats;
+			const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
+			for (size_t i = 0; i < fields.size(); i++) {
+				int length = fields[i].get_type_magic_num() == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
+				bool index = fields[i].get_index() == "" ? false : true;
+				ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
+			}
+			TableStruct ts(table_name, IM.get_record_size(table_name), ats);
+
+			std::vector<std::string> buff;
+			RM.selectAll(ts, buff, col_list);
+			for (size_t i = 0; i < buff.size(); i++) {
+				ret_string += buff[i];
+			}
+			if (buff.size() < 4) {
+				ret_string += "0 rows in set (0.00 sec)\n";
+			} else {
+				ret_string += std::to_string(buff.size() - 4) + " rows in set (0.00 sec)\n";
+			}
 		}
-		TableStruct ts(table_name, IM.get_record_size(table_name), ats);
-		//RM.selectRecord(table_name, )
-		std::vector<std::string> buff;
-		RM.selectAll(ts, buff, col_list);
-		for (size_t i = 0; i < buff.size(); i++) {
-			ret_string += buff[i];
-		}
-		ret_string += std::to_string(buff.size() - 4) + " rows in set (0.00 sec)\n";
+
+
 
 	}
 
@@ -358,10 +369,12 @@ string API::select_all(string table_name, vector<string> col_list) {
 
 string API::select(string table_name, vector<string> col_list, vector<int> indexs) {
 	string ret_string;
-	// TODO: API select_all
-
+	std::reverse(col_list.begin(), col_list.end());
+	std::cout << "select" << std::endl;
 	if (CM.have_table(table_name)) {
-		if (CM.have_column(table_name, col_list)) {
+		if (col_list.size() == 1 && col_list.front() == "*" || CM.have_column(table_name, col_list)) {
+
+
 
 			std::vector<AttrInfo> ats;
 			const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
@@ -371,17 +384,19 @@ string API::select(string table_name, vector<string> col_list, vector<int> index
 				ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
 			}
 			TableStruct ts(table_name, IM.get_record_size(table_name), ats);
-			std::vector<char*> buff;
-			RM.selectRecord(ts, indexs, buff);
+			std::vector<string> buff;
+			RM.selectRecord(ts, col_list, indexs, buff);  // real version, applied after melody fixed;
 
-			//TODO: convert to a proper format;
+
+
 			for (size_t i = 0; i < buff.size(); i++) {
 				ret_string += buff[i];
-				ret_string += "1213123123123\n";
-			}
 
-			for (size_t i = 0; i < buff.size(); i++) {
-				delete[] buff[i];
+			}
+			if (buff.size() < 4) {
+				ret_string += "0 rows in set (0.00 sec)\n";
+			} else {
+				ret_string += std::to_string(buff.size() - 4) + " rows in set (0.00 sec)\n";
 			}
 
 		} else {
@@ -390,27 +405,31 @@ string API::select(string table_name, vector<string> col_list, vector<int> index
 	} else {
 		ret_string += "Error: have no such table\n";
 	}
-	ret_string += "+-------+-------+\n";
-	ret_string += "| s_ID  | i_ID  |\n";
-	ret_string += "+-------+-------+\n";
-	ret_string += "| 12345 | 10101 |\n";
-	ret_string += "+-------+-------+\n";
-	ret_string += "9 rows in set (0.00 sec)\n";
+
+
 	return ret_string;
 }
 
 vector<int> API::search_between(string table_name, int type_1, string comp, int type_2, string between_1, int type_3, string between_2) {
-	// TODO: API search_between
+	int temp = type_3;
+	type_3 = type_1;
+	type_1 = temp;
+	std::string temp_str = between_2;
+	between_2 = between_1;
+	between_1 = temp_str;
+
+	std::cout << "search between" << std::endl;
+
 	vector<int> ret_indexs;
 	if (!CM.have_table(table_name)) {
-		std::cerr << "no such table" << std::endl;
+
 		ret_indexs.push_back(-1); // -1 for no table_name
 		return ret_indexs;
 	} else {
 		TableInfo& temp_table = CM.find_table(table_name);
 		if (type_1 == 81) {
 			if (!temp_table.have_column(comp)) {
-				std::cerr << "no such column" << std::endl;
+
 				ret_indexs.push_back(-1); // -1 for no ret_indexs and no such column;
 				return ret_indexs;
 			} else {
@@ -450,23 +469,41 @@ vector<int> API::search_between(string table_name, int type_1, string comp, int 
 							break;
 						}
 						default:
-							std::cout << "no such type_2" << std::endl;
+							//std::cout << "no such type_2" << std::endl;
+
 							ret_indexs.push_back(-2); // -2 for no such type;
 							return ret_indexs;
 						}
 					} else {
 						//TODO: to be implemented by melody;
-						std::cout << "dfz have no index, to be fixed by melody" << std::endl;
+
+
+						std::vector<AttrInfo> ats;
+						const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
+						for (size_t i = 0; i < fields.size(); i++) {
+							int length = fields[i].get_type_magic_num() == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
+							bool index = fields[i].get_index() == "" ? false : true;
+							ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
+						}
+						TableStruct ts(table_name, IM.get_record_size(table_name), ats);
+						std::vector<int> result1;
+						std::vector<int> result2;
+
+						RM.selectRecordWithCondition(ts, result1, 6, type_1, comp, type_2, between_1);
+						RM.selectRecordWithCondition(ts, result2, 5, type_1, comp, type_3, between_2);
+						ret_indexs = and_indexs(result1, result2);
+						return ret_indexs;
+
 					}
 				} else {
-					std::cout << "type not match" << std::endl;
+					//std::cout << "type not match" << std::endl;
 					ret_indexs.push_back(-3); // -3 for type not match
 					return ret_indexs;
 				}
 
 			}
 		} else {
-			//TODO: to implement 3=3, 3=a 
+			//std::cout << "does not support" << std::endl;
 			ret_indexs.push_back(-2); // -2 for not a column;
 			return ret_indexs;
 		}
@@ -477,19 +514,20 @@ vector<int> API::search_between(string table_name, int type_1, string comp, int 
 
 
 vector<int> API::search_where(string table_name, int comparison_type, int type_2, string comp_2, int type_1, string comp_1) {
-	//std::string function_name = "search_where";
+
+	std::cout << "search where" << std::endl;
 	vector<int> ret_indexs;
-	// TODO: API search_where
-	//std::vector<int> result;
+
+
 	if (!CM.have_table(table_name)) {
-		std::cerr << " no such table" << std::endl;
+
 		ret_indexs.push_back(-1); // -1 for no result
 		return ret_indexs;
 	} else {
 		TableInfo& temp_table = CM.find_table(table_name);
 		if (type_1 == 81) {
 			if (!temp_table.have_column(comp_1)) {
-				std::cout << "no such column" << std::endl;
+				//std::cout << "no such column" << std::endl;
 				ret_indexs.push_back(-2); // -1 for no such column 
 				return ret_indexs;
 			} else {
@@ -533,18 +571,28 @@ vector<int> API::search_where(string table_name, int comparison_type, int type_2
 						}
 					} else {
 						// TODO: to be fixed by melody
+						std::vector<AttrInfo> ats;
+						const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
+						for (size_t i = 0; i < fields.size(); i++) {
+							int length = fields[i].get_type_magic_num() == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
+							bool index = fields[i].get_index() == "" ? false : true;
+							ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
+						}
+						TableStruct ts(table_name, IM.get_record_size(table_name), ats);
+						std::vector<char*> buff;
+						RM.selectRecordWithCondition(ts, ret_indexs, comparison_type, type_1, comp_1, type_2, comp_2);  
 						return ret_indexs;
 					}
 				} else {
-					std::cout << "type not match" << std::endl;
+					//std::cout << "type not match" << std::endl;
 					ret_indexs.push_back(-3); // -3 for no type
 					return ret_indexs;
 				}
 
 			}
 		} else {
-			//TODO: to implement 3=3, 3=a
-			std::cout << "The first Comparator is not a column" << std::endl;
+			
+			std::cout << "ERROR: The first Comparator is not a column" << std::endl;
 			ret_indexs.push_back(-1); // -1 for no type
 			return ret_indexs;
 		}
@@ -558,6 +606,7 @@ string API::delete_all(string table_name) {
 	if (CM.have_table(table_name)) {
 		// int IM.delete_all(table_name);
 		// string RM.delete_all(table_name);
+
 		ret_string += "Query OK, 1 row affected (0.01 sec)\n";
 	} else {
 		ret_string += "Error: have no such table\n";
@@ -571,7 +620,18 @@ string API::delete_part(string table_name, vector<int> indexs) {
 
 	string ret_string;
 	if (CM.have_table(table_name)) {
-		// int IM.delete_part(table_name, indexs);
+
+		std::vector<AttrInfo> ats;
+		const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
+		for (size_t i = 0; i < fields.size(); i++) {
+			int length = fields[i].get_type_magic_num() == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
+			bool index = fields[i].get_index() == "" ? false : true;
+			ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
+		}
+		TableStruct ts(table_name, IM.get_record_size(table_name), ats);
+
+		RM.deleteRecord(ts, indexs);
+		IM.delete_part(table_name, indexs);
 		// string RM.delete_part(table_name, indexs);
 		ret_string += "Query OK, 3 row affected (0.02 sec)\n";
 	} else {
@@ -732,13 +792,70 @@ string API::create_index(string table_name, string index_name, vector<string> co
 	}
 
 	if (CM.have_table(table_name)) {
-
-		//std::string real_index_name = index_name + "_index_" + col_list[0];
 		if (!CM.have_index_with_index_name(table_name, index_name)) {
-			//TODO: get keys from RecordManger
+
+
+
+			std::vector<AttrInfo> ats;
+			const std::vector<FieldInfo>& fields = CM.find_table(table_name).get_columns();
+			for (size_t i = 0; i < fields.size(); i++) {
+				int length = fields[i].get_type_magic_num() == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
+				bool index = fields[i].get_index() == "" ? false : true;
+				ats.push_back(AttrInfo(fields[i].get_name(), fields[i].get_type_magic_num(), length, fields[i].get_unique(), index));
+			}
+			TableStruct ts(table_name, IM.get_record_size(table_name), ats);
+
+			std::vector<std::string> values;
+			RM.selectAttribute(ts, col_list[0], values);
+			std::stringstream convert;
+
+			switch (CM.get_type(table_name, col_list[0]).get_type()) {
+			case Int: {
+				std::vector<int> keys;
+				int temp;
+				for (size_t i = 0; i < values.size(); i++) {
+					convert << values[i];
+					convert >> temp;
+					convert.clear();
+					keys.push_back(temp);
+				}
+				IM.create_index(index_name, table_name, col_list[0], keys);
+				break;
+			}
+
+			case Float: {
+				std::vector<float> keys;
+				float temp;
+				for (size_t i = 0; i < values.size(); i++) {
+					convert << values[i];
+					convert >> temp;
+					convert.clear();
+					keys.push_back(temp);
+				}
+				IM.create_index(index_name, table_name, col_list[0], keys);
+				break;
+			}
+			case Chars: {
+				std::vector<std::string> keys;
+				std::string temp;
+				for (size_t i = 0; i < values.size(); i++) {
+					convert << values[i];
+					convert >> temp;
+					convert.clear();
+					keys.push_back(temp);
+				}
+				IM.create_index(index_name, table_name, col_list[0], keys);
+				break;
+			}
+			}
 
 			//IM.create_index(index_name, table_name, col_list[0], keys);
-			ret_string += "create index : needs melody's help\n";
+			/*for (size_t i = 0; i < values.size(); i++) {
+				delete[] values[i];
+			}*/
+			//IM.create_index(index_name, table_name, col_list[0], keys);
+			//ret_string += "create index : needs melody's help\n";
+
 		} else {
 			ret_string += "Error: have same index name '" + index_name + "'\n";
 		}
@@ -756,7 +873,7 @@ string API::drop_table(string table_name) {
 	// TODO: API drop_table
 	string ret_string;
 	if (CM.have_table(table_name)) {
-		IM.drop_table(table_name);  // IM must be used before CM for it will use CM to get index message
+		//IM.drop_table(table_name);  // IM must be used before CM for it will use CM to get index message
 
 		CM.drop_table(table_name);
 
@@ -809,7 +926,7 @@ string API::show_tables() {
 			ret_string += "...";
 		} else {
 			ret_string += temp_string;
-			for (int i = 0; i < 18 - temp_string.size(); i++) ret_string += " ";
+			for (size_t i = 0; i < 18 - temp_string.size(); i++) ret_string += " ";
 		}
 		ret_string += " |\n";
 	}

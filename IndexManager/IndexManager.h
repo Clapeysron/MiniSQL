@@ -16,8 +16,8 @@ template <typename T>
 class Index {
 public:
 	using record_ptr = int;
-	//Index() = delete;
-	Index(std::string indexName, std::string fieldName, std::string tableName, BPlusTree<T> tree) :
+
+	Index(std::string indexName, std::string fieldName, std::string tableName, BPlusTree<T>& tree) :
 		_indexName(indexName),
 		_fieldName(fieldName),
 		_tableName(tableName),
@@ -95,47 +95,107 @@ public:
 		return theSingleton;
 	}
 
-	template<typename T>
-	void create_index(const std::string& indexName, const std::string& tableName, const std::string& fieldName, const std::vector<T> keys) {
+
+	void create_index(const std::string& indexName, const std::string& tableName, const std::string& fieldName, const std::vector<int>& keys) {
 		TypeInfo temp_type = CatalogManager::Instance().get_type(tableName, fieldName);
-		std::vector<std::pair<T, int>> entities;
+		std::vector<std::pair<int, int>> entities;
 		entities.reserve(keys.size());
 		int i = 0;
 		for_each(keys.begin(), keys.end(),
-			[&i, &entities](T key) {entities.push_back(std::make_pair(key, i++));
+			[&i, &entities](int key) {entities.push_back(std::make_pair(key, i++));
 		});
 		std::sort(entities.begin(), entities.end(),
 			[](auto &left, auto &right) {
 			return left.first < right.first;
 		});
-
-		switch (temp_type.get_type()) {
-		case Int:
-			_intIndex.emplace(
-				indexName,
-				Index<int>(indexName,
-					fieldName,
-					tableName,
-					BPlusTree<int>::create(entities, 4)));
-			break;
-		case Float:
-			_intIndex.emplace(
-				indexName,
-				Index<float>(indexName,
-					fieldName,
-					tableName,
-					BPlusTree<float>::create(entities, 4)));
-			break;
-		case Chars:
-			_intIndex.emplace(
-				indexName,
-				Index<std::string>(indexName,
-					fieldName,
-					tableName,
-					BPlusTree<std::string>::create(entities, temp_type.get_size())));
-			break;
-		}
+		_intIndex.emplace(
+			indexName,
+			Index<int>(indexName,
+				fieldName,
+				tableName,
+				BPlusTree<int>::create(entities, 4)));
 	}
+
+	void create_index(const std::string& indexName, const std::string& tableName, const std::string& fieldName, const std::vector<float>& keys) {
+		TypeInfo temp_type = CatalogManager::Instance().get_type(tableName, fieldName);
+		std::vector<std::pair<float, int>> entities;
+		entities.reserve(keys.size());
+		int i = 0;
+		for_each(keys.begin(), keys.end(),
+			[&i, &entities](float key) {entities.push_back(std::make_pair(key, i++));
+		});
+		std::sort(entities.begin(), entities.end(),
+			[](auto &left, auto &right) {
+			return left.first < right.first;
+		});
+		_floatIndex.emplace(
+			indexName,
+			Index<float>(indexName,
+				fieldName,
+				tableName,
+				BPlusTree<float>::create(entities, 4)));
+	}
+
+	void create_index(const std::string& indexName, const std::string& tableName, const std::string& fieldName, const std::vector<std::string>& keys) {
+		TypeInfo temp_type = CatalogManager::Instance().get_type(tableName, fieldName);
+		std::vector<std::pair<std::string, int>> entities;
+		entities.reserve(keys.size());
+		int i = 0;
+		for_each(keys.begin(), keys.end(),
+			[&i, &entities](std::string key) {entities.push_back(std::make_pair(key, i++));
+		});
+		std::sort(entities.begin(), entities.end(),
+			[](auto &left, auto &right) {
+			return left.first < right.first;
+		});
+		_stringIndex.emplace(
+			indexName,
+			Index<std::string>(indexName,
+				fieldName,
+				tableName,
+				BPlusTree<std::string>::create(entities, 4)));
+	}
+
+	//template<typename T>
+	//void create_index(const std::string& indexName, const std::string& tableName, const std::string& fieldName, const std::vector<T>& keys) {
+	//	TypeInfo temp_type = CatalogManager::Instance().get_type(tableName, fieldName);
+	//	std::vector<std::pair<T, int>> entities;
+	//	entities.reserve(keys.size());
+	//	int i = 0;
+	//	for_each(keys.begin(), keys.end(),
+	//		[&i, &entities](T key) {entities.push_back(std::make_pair(key, i++));
+	//	});
+	//	std::sort(entities.begin(), entities.end(),
+	//		[](auto &left, auto &right) {
+	//		return left.first < right.first;
+	//	});
+	//	switch (temp_type.get_type()) {
+	//	case Int:
+	//		_intIndex.emplace(
+	//			indexName,
+	//			Index<int>(indexName,
+	//				fieldName,
+	//				tableName,
+	//				BPlusTree<int>::create(entities, 4)));
+	//		break;
+	//	case Float:
+	//		_intIndex.emplace(
+	//			indexName,
+	//			Index<float>(indexName,
+	//				fieldName,
+	//				tableName,
+	//				BPlusTree<float>::create(entities, 4)));
+	//		break;
+	//	case Chars:
+	//		_intIndex.emplace(
+	//			indexName,
+	//			Index<std::string>(indexName,
+	//				fieldName,
+	//				tableName,
+	//				BPlusTree<std::string>::create(entities, temp_type.get_size())));
+	//		break;
+	//	}
+	//}
 
 	void drop_index(const Type& type, const std::string& index_name) {
 		switch (type) {
@@ -505,7 +565,7 @@ private:
 				//}
 
 			}
-			
+
 		}
 	}
 

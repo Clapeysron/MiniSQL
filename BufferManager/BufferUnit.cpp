@@ -90,7 +90,7 @@ bool BufferUnit::writeBlock(int index, char *writeBuffer){
                 blockIndexInBuffer[index] = newIndex;
                 swapBlock(index, newIndex);
                 if(blocks[newIndex].valid){
-                    blockIndexInBuffer[blocks[newIndex].index] = -1;
+                    blockIndexInBuffer[blocks[newIndex].index] = newIndex;
                 }
                 memcpy(blocks[newIndex].data, writeBuffer, (size_t)blockSize);
                 blocks[newIndex].edited = 1;

@@ -67,11 +67,11 @@ public:
     bool createTable(string tableName);
     bool dropTable(string tableName);
     int insertIntoTable(TableStruct &ts, char* data);
-    int deleteRecord(TableStruct &ts, vector<int> &scope, vector<char *> &moved);
-	bool selectRecord(TableStruct & ts, vector<int>& scope, vector<char*>& result);
-    bool selectRecordWithCondition(TableStruct &ts, vector<int> &scope, vector<int> &results, int &comparison_type, int &type_1, string &comp_1, int &type_2, string comp_2);
+    int deleteRecord(TableStruct &ts, vector<int> &scope);
+	bool selectRecord(TableStruct & ts, vector<string>& col_list, vector<int>& scope, vector<string>& result);
+    bool selectRecordWithCondition(TableStruct &ts, vector<int> &results, int comparison_type, int type_1, string &comp_1, int type_2, string comp_2);
     bool selectAll(TableStruct &ts, vector<string> &result, vector<string> &col_list);
-    bool selectAttribute(TableStruct &ts, string col, vector<char *> &values);
+    bool selectAttribute(TableStruct &ts, string col, vector<string> &values);
 
     RecordManager(BufferManager &bm, int blockSize):bm(bm), blockSize(blockSize){
 

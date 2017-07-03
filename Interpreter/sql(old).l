@@ -61,11 +61,10 @@ EXIT	{ return EXIT; }
    /* strings */
 
 '(\\.|''|[^'\n])*'	|
-\"(\\.|\"\"|[^"\n])*\"  { yylval.strval = strdup(yytext+1); yylval.strval[yyleng-2] = 0; 
-	for(int i=0; i<yyleng-2;i++) if(yylval.strval[i]==' ') yylval.strval[i]='#' ;return STRING; }
+\"(\\.|\"\"|[^"\n])*\"  { yylval.strval = strdup(yytext); return STRING; }
 
-'(\\.|[^'\n])*$	        { yyerror("Unterminated string %s", yytext); return ERROR_STR; }
-\"(\\.|[^"\n])*$	{ yyerror("Unterminated string %s", yytext); return ERROR_STR; }
+'(\\.|[^'\n])*$	        { yyerror("Unterminated string %s", yytext); }
+\"(\\.|[^"\n])*$	{ yyerror("Unterminated string %s", yytext); }
 
    /* operators */
 
