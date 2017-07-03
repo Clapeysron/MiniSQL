@@ -102,5 +102,5 @@ private:
 
 };
 
-// TODO make a compare function for every Type
+
 

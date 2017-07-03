@@ -50,7 +50,6 @@ bool BufferManager::destroyBuffer(string filename){
 bool BufferManager::createFile(string filename){
     destroyBuffer(filename);
     if((int)getFileSize(filename) != -1){
-        cout << "Fatal error, the file you want to create has already exist." << endl;
         return false;
     }
     ofstream fp(filename, ios::binary);

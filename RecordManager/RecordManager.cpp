@@ -47,11 +47,13 @@ bool RecordManager::isConditionSatisfied(TableStruct &ts, Condition &con, char *
 		string &valb = con._str;
 		string vala = bufarea;
 		COMPRASION;
+		break;
 	}
 	case INT: {
 		int valb = con._int;
 		int vala = atoi(bufarea);
 		COMPRASION;
+		break;
 	}
 	case DOUBLE: {
 		std::stringstream stream;
@@ -61,6 +63,7 @@ bool RecordManager::isConditionSatisfied(TableStruct &ts, Condition &con, char *
 		float vala;
 		stream >> vala;
 		COMPRASION;
+		break;
 	}
 	default:
 		break;
@@ -72,7 +75,7 @@ bool RecordManager::isConditionSatisfied(TableStruct &ts, Condition &con, char *
 }
 
 bool RecordManager::isDup(TableStruct &ts, char *record) {
-	int recordLen = getRecordLen(ts);
+	int recordLen = getRecordLen(ts) + 1;
 	int recordAmountInOneBlock = blockSize / recordLen;
 	int blockAmount = (ts.recordAmount - 1) / recordAmountInOneBlock + 1;
 	string filename = GET_FILENAME(ts.name);
@@ -94,7 +97,7 @@ bool RecordManager::isDup(TableStruct &ts, char *record) {
 	for (int j = 0; j < blockAmount; ++j) {
 		bm.readDataFromFile(filename, j, block);
 		for (int k = 0; k < recordAmountInOneBlock; ++k) {
-			if (isDupEntry(uniqueList, block + k * recordLen, record)) {
+			if (isDupEntry(uniqueList, block + k * recordLen + 1, record)) {
 				return true;
 			}
 		}
@@ -156,7 +159,7 @@ int RecordManager::insertIntoTable(TableStruct &ts, char *data) {
 		memcpy(block + ((ts.recordAmount % recordAmountInOneBlock) * recordLen), newData, (size_t)recordLen);
 		bm.writeDataToFile(filename, ts.recordAmount / recordAmountInOneBlock, block);
 
-		delete[] block;
+		//delete[] block;
 	}
 
 	return ts.recordAmount++; // the record amount will add one and the index of this record will be returned.

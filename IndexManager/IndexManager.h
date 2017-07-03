@@ -281,6 +281,9 @@ public:
 		_real_record_ptrs.at(table_name).push_back(1);
 	}
 
+	void clear_record(std::string table_name) {
+		_real_record_ptrs.at(table_name).clear();
+	}
 
 
 	void insert(const string& table_name, const string& fieldName, int key) {
@@ -369,8 +372,7 @@ public:
 	std::vector<record_ptr> search_range(std::string& indexName, int * low, int * high) {
 		Index<int>& index = _intIndex.at(indexName);
 		if (low == nullptr&&high == nullptr) {
-			//TODO: consider a porper way
-			/*return convert_to_real_ptrs(index.get_table_name(), index.get_tree().find_all());*/
+			
 			std::vector<record_ptr> result(1, -1);
 			return result;
 		} else if (high == nullptr) {
@@ -384,8 +386,7 @@ public:
 	std::vector<record_ptr> search_range(std::string& indexName, float* low, float* high) {
 		Index<float>& index = _floatIndex.at(indexName);
 		if (low == nullptr&&high == nullptr) {
-			//TODO: consider a porper way
-			/*return convert_to_real_ptrs(index.get_table_name(), index.get_tree().find_all());*/
+		
 			std::vector<record_ptr> result(1, -1);
 			return result;
 		} else if (high == nullptr) {
@@ -399,8 +400,7 @@ public:
 	std::vector<record_ptr> search_range(std::string& indexName, std::string* low, std::string* high) {
 		Index<std::string>& index = _stringIndex.at(indexName);
 		if (low == nullptr&&high == nullptr) {
-			//TODO: consider a porper way
-			/*return convert_to_real_ptrs(index.get_table_name(), index.get_tree().find_all());*/
+			
 			std::vector<record_ptr> result(1, -1);
 			return result;
 		} else if (high == nullptr) {

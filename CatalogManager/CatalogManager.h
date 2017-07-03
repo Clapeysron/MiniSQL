@@ -6,8 +6,6 @@
 #include <map>
 #include <utility>
 #include "../IndexManager/TypeInfo.h"
-//#include "..\BufferManager\BufferManager.h"
-//#include "..\RecordManager\RecordManager.h"
 #include <iostream>
 #include <algorithm>
 
@@ -47,6 +45,10 @@ public:
 	void drop_index() {
 		_indexName = "";
 		
+	}
+
+	void set_index(std::string indexName) {
+		_indexName = indexName;
 	}
 
 	/*AttrInfo convert_to_attr() const  {
@@ -158,6 +160,15 @@ public:
 		}
 	}
 
+	void set_index(std::string fieldName, std::string indexName) {
+		for (size_t i = 0; i < _fields.size(); i++) {
+			if (_fields[i].get_name() == fieldName) {
+				return _fields[i].set_index(indexName);
+				break;
+			}
+		}
+	}
+
 
 
 
@@ -214,7 +225,7 @@ public:
 	}
 
 	void drop_index_with_index_name(const std::string& tableName, const std::string& indexName) {
-		find_table(tableName).drop_index_with_index_name(indexName);
+		//find_table(tableName).drop_index_with_index_name(indexName);
 	}
 
 	std::pair<Type, std::string> find_index(const std::string& tableName, const std::string& fieldName) {
@@ -262,7 +273,9 @@ public:
 
 	std::vector<std::string> show_tables();
 
-
+	void set_index(std::string tableName, std::string fieldName,  std::string indexName) {
+		_tables.at(tableName).set_index(fieldName, indexName);
+	}
 
 private:
 	std::map<std::string, TableInfo> _tables;

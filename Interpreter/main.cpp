@@ -10,6 +10,11 @@
 #include "Interpreter.hpp"
 int main(int argc, const char * argv[])
 {
-    Interpreter test;
-    test.main_loop(cin);
+	if (isatty(fileno(stdin))) {
+		Interpreter terminal;
+		terminal.main_loop(cin);
+	} else {
+		Interpreter pipe;
+		pipe.exe_loop(cin);
+	}
 }
