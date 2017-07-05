@@ -93,7 +93,12 @@ public:
 	}
 
 	size_t get_size() const {
-		return _size;
+		if (_type==Chars) {
+			return _size+1;
+		} else {
+			return _size;
+		}
+		
 	}
 
 private:

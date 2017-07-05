@@ -96,6 +96,22 @@ string API::exec() {
 				ret_indexs = indexs_list[0];
 				for (size_t i = 0; i < indexs_list.size(); i++) {
 					ret_indexs = and_indexs(ret_indexs, indexs_list[i]);
+					if (indexs_list[i].size() == 1 && indexs_list[i][0] < 0) {
+						switch (indexs_list[i][0]) {
+						case -1:
+							ret_string += "Error: have no such table\n";
+							return ret_string;
+							break;
+						case -2:
+							ret_string += "Error: have no such column\n";
+							return ret_string;
+							break;
+						case -3:
+							ret_string += "Error: type doesn't match\n";
+							return ret_string;
+							break;
+						}
+					}
 				}
 				ret_string = select(table_name, col_list, ret_indexs);
 				return ret_string;
@@ -176,6 +192,22 @@ string API::exec() {
 				ret_indexs = indexs_list[0];
 				for (size_t i = 0; i < indexs_list.size(); i++) {
 					ret_indexs = and_indexs(ret_indexs, indexs_list[i]);
+					if (indexs_list[i].size() == 1 && indexs_list[i][0] < 0) {
+						switch (indexs_list[i][0]) {
+						case -1:
+							ret_string += "Error: have no such table\n";
+							return ret_string;
+							break;
+						case -2:
+							ret_string += "Error: have no such column\n";
+							return ret_string;
+							break;
+						case -3:
+							ret_string += "Error: type doesn't match\n";
+							return ret_string;
+							break;
+						}
+					}
 				}
 				ret_string = update_part(table_name, col_name, update_type, update_value, ret_indexs);
 				return ret_string;
@@ -223,6 +255,23 @@ string API::exec() {
 				ret_indexs = indexs_list[0];
 				for (size_t i = 0; i < indexs_list.size(); i++) {
 					ret_indexs = and_indexs(ret_indexs, indexs_list[i]);
+					if (indexs_list[i].size() == 1 && indexs_list[i][0] < 0) {
+						switch (indexs_list[i][0]) {
+						case -1:
+							ret_string += "Error: have no such table\n";
+							return ret_string;
+							break;
+						case -2:
+							ret_string += "Error: have no such column\n";
+							return ret_string;
+							break;
+						case -3:
+							ret_string += "Error: type doesn't match\n";
+							return ret_string;
+							break;
+						}
+					}
+
 				}
 				ret_string = delete_part(table_name, ret_indexs);
 				return ret_string;
@@ -373,6 +422,7 @@ string API::select(string table_name, vector<string> col_list, vector<int> index
 	string ret_string;
 	std::reverse(col_list.begin(), col_list.end());
 	//std::cout << "select" << std::endl;
+	
 	if (CM.have_table(table_name)) {
 		if (col_list.size() == 1 && col_list.front() == "*" || CM.have_column(table_name, col_list)) {
 
@@ -614,7 +664,7 @@ vector<int> API::search_where(string table_name, int comparison_type, int type_2
 			}
 		} else {
 
-			std::cout << "ERROR: The first Comparator is not a column" << std::endl;
+			std::cout << "Error: The first Comparator is not a column" << std::endl;
 			ret_indexs.push_back(-1); // -1 for no type
 			return ret_indexs;
 		}
@@ -675,7 +725,7 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 
 	for (size_t i = 0; i < value_list.size(); i++) {
 		for (size_t j = 0; j < value_list[i].size(); j++) {
-			if (value_list[i][j] == '#') {
+			if (value_list[i][j] == '#'||value_list[i][j] == '$') {
 				value_list[i][j] = ' ';
 			}
 		}
@@ -693,7 +743,7 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 			for (size_t i = 0; i < fields.size(); i++) {
 				int length = type_list[i] == 82 ? fields[i].cget_type().get_size() : 11;   //11 is the length of int max
 				if (value_list[i].size() > length) {
-					ret_string += "'" + value_list[i] + "' 's length is larger than maximum";
+					ret_string += "'" + value_list[i] + "' 's length is larger than maximum\n";
 					return ret_string;
 				}
 				bool index = fields[i].get_index() == "" ? false : true;
@@ -703,14 +753,14 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 			}
 			TableStruct ts(table_name, IM.get_record_size(table_name), ats);
 
-			char * data = new char[buffsize];
+			char * data = new char[buffsize + 1];
 			int offset = 0;
 			for (size_t i = 0; i < value_list.size(); i++) {
 				memcpy(data + offset, value_list[i].data(), value_list[i].length() + 1);
 				offset += length_list[i];
 			}
-
-			if (RM.insertIntoTable(ts, data)==-1) {
+			data[buffsize] = '\0';
+			if (RM.insertIntoTable(ts, data) == -1) {
 				ret_string += "Query fail: Duplicated keys on a unique column\n";
 				return ret_string;
 			}
@@ -739,7 +789,7 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 						break;
 					}
 					default:
-						std::cout << "Error: insert type error" << std::endl;
+						std::cout << "Error: insert type Error" << std::endl;
 						break;
 					}
 
@@ -749,7 +799,10 @@ string API::insert(string table_name, vector<int> type_list, vector<string> valu
 
 			}
 			IM.insert_real_index(table_name);
+
 			delete[] data;
+
+
 		} else {
 			ret_string += "Error: values' type doesn't match table'" + table_name + "'\n";
 			return ret_string;
@@ -798,18 +851,29 @@ string API::create(string table_name, vector<string> name_list, vector<int> type
 	std::reverse(unique_flag.begin(), unique_flag.end());
 	std::reverse(nnull_flag.begin(), nnull_flag.end());
 
-
-	//TODO: primary index should be made;
 	string ret_string;
+
+	
+	//primary index should be made;
+	
 	if (table_name.size() > 20) {
-		ret_string += "ERROR : Table name should be less than 20 \n";
+		ret_string += "Error : Table name should be less than 20 \n";
 	} else {
 		if (!CM.have_table(table_name)) {
+			for (size_t i = 0; i < name_list.size(); i++) {
+				for (size_t j = i + 1; j < name_list.size(); j++) {
+					if (name_list[i]==name_list[j]) {
+						ret_string += "Error : duplicated column not allowed\n";
+						return ret_string;
+					}
+				}
+			}
+			
 			CM.create_table(table_name, name_list, type_list, length_list, primary_flag, unique_flag, nnull_flag);
 			ret_string += "Query OK, 0 rows affected\n";
 
 		} else {
-			ret_string += "ERROR : Table '" + table_name + "' already exists\n";
+			ret_string += "Error : Table '" + table_name + "' already exists\n";
 		}
 	}
 
@@ -825,7 +889,7 @@ string API::create_index(string table_name, string index_name, vector<string> co
 	// TODO: API create_index
 	string ret_string;
 	if (col_list.size() != 1) {
-		ret_string += "ERROR: can only create index for one col at a time!\n";
+		ret_string += "Error: can only create index for one col at a time!\n";
 		return ret_string;
 	}
 
@@ -898,6 +962,7 @@ string API::create_index(string table_name, string index_name, vector<string> co
 
 		} else {
 			ret_string += "Error: have same index name '" + index_name + "'\n";
+			return ret_string;
 		}
 
 		ret_string += "Query OK, 0 rows affected\n";
@@ -942,10 +1007,10 @@ string API::drop_index(string table_name, string index_name) {
 
 			ret_string += "Query OK, 0 rows affected\n";
 		} else {
-			ret_string += "ERROR: have no such index\n";
+			ret_string += "Error: have no such index\n";
 		}
 	} else {
-		ret_string += "ERROR: have no such table\n";
+		ret_string += "Error: have no such table\n";
 	}
 
 
@@ -998,15 +1063,15 @@ vector<int> API::and_indexs(vector<int> indexs_1, vector<int> indexs_2) {
 	if (indexs_1.size() == 1 && indexs_1[0] < 0) {
 		switch (indexs_1[0]) {
 		case -1:
-			std::cout << "Error: have no such table" << std::endl;
+			//std::cout << "Error: have no such table" << std::endl;
 			return ret_indexs;
 			break;
 		case -2:
-			std::cout << "Error: have no such column" << std::endl;
+			//std::cout << "Error: have no such column" << std::endl;
 			return ret_indexs;
 			break;
 		case -3:
-			std::cout << "Error: type doesn't match" << std::endl;
+			//std::cout << "Error: type doesn't match" << std::endl;
 			return ret_indexs;
 			break;
 		}

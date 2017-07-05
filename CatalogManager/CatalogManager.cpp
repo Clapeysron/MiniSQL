@@ -10,6 +10,10 @@ TableInfo::TableInfo(const std::vector<FieldInfo>& fields, const std::string & n
 	_fields(fields),
 	_name(name),
 	_primary(primary) {
+	if (primary<_fields.size()) {
+		_fields[_primary].set_unique(true);
+	}
+	
 
 }
 

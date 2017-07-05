@@ -290,14 +290,14 @@ public:
 
 
 		/*_real_record_ptrs.at(table_name).push_back(1);*/
-		std::pair<Type, std::string> indexName_type = CatalogManager::Instance().find_index(table_name, fieldName);
+		/*std::pair<Type, std::string> indexName_type = CatalogManager::Instance().find_index(table_name, fieldName);
 		if (indexName_type.first == Int) {
 			_intIndex.at(indexName_type.second).insert(key, get_record_size(table_name));
 
 		} else {
 			std::cout << "IndexManager: insert: type doesn't match";
 
-		}
+		}*/
 
 	}
 

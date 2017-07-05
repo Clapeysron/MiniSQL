@@ -42,7 +42,7 @@ public:
 		_changed(true),
 		_isLeaf(isLeaf),
 		_next(next) {
-		if (_isLeaf) {
+		if (!_isLeaf) {
 			_children = pointers;
 		} else {
 			_records = pointers;
@@ -102,10 +102,11 @@ public:
 
 	BPTNode(block_ptr blockNum, bool isnew) :
 		_blockNumber(blockNum),
-		_changed(false) {
+		_changed(true) {
 		if (isnew) {
 
 		} else {
+			_changed = false;
 			int blockSize = BufferManager::Instance().getBlockSize();
 			char* block = new char[blockSize];
 			BufferManager::Instance().readDataFromFile(_fileName, blockNum, block);
@@ -149,6 +150,34 @@ public:
 	}
 
 	~BPTNode() {
+		if (_changed) {
+			//_changed = false;
+			int blockSize = BufferManager::Instance().getBlockSize();
+			char* block = new char[blockSize];
+			CharOutStream charouts(block, blockSize);
+			charouts << _degree << _is_root << _isLeaf << _father;
+			charouts << _keys.size();
+			for (auto i = _keys.begin(); i != _keys.end(); i++) {
+				charouts << (*i);
+			}
+			if (_isLeaf) {
+				//charouts << _records.size();
+				assert(_records.size() == _keys.size());
+				for (auto i = _records.begin(); i != _records.end(); i++) {
+					charouts << (*i);
+				}
+			} else {
+				assert(_children.size() == _keys.size());
+				for (auto i = _children.begin(); i != _children.end(); i++) {
+					charouts << (*i);
+				}
+			}
+			BufferManager::Instance().writeDataToFile(_fileName, _blockNumber, block);
+
+		}
+	}
+
+	void write_back() {
 		if (_changed) {
 			//_changed = false;
 			int blockSize = BufferManager::Instance().getBlockSize();
@@ -550,7 +579,7 @@ public:
 
 		BufferManager::Instance().createFile(_fileName);
 		int root_block_num = BufferManager::Instance().getNewBlockNum(_fileName);
-		BPTNode<T> root(root_block_num, true);
+		//BPTNode<T> root(root_block_num, true);
 
 		//std::unique_ptr<BPTNode<T>>  father = &root;
 		//std::unique_ptr<BPTNode<T>> last = nullptr;
@@ -590,6 +619,7 @@ public:
 			}
 
 		}
+		//root.write_back();
 		return BPlusTree<T>(key_size, root_block_num);
 
 	}

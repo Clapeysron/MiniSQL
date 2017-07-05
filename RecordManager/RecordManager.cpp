@@ -133,7 +133,7 @@ bool RecordManager::dropTable(string tableName) {
 
 int RecordManager::insertIntoTable(TableStruct &ts, char *data) {
 	if (isDup(ts, data)) {
-		cout << "Dup" << endl;
+		//cout << "Dup" << endl;
 		return -1;
 	}
 
@@ -257,10 +257,12 @@ bool RecordManager::selectAll(TableStruct &ts, vector<string> &result, vector<st
 			pointers.push_back(start);
 			pointers.push_back(ts.attrs[i].length);
 			width.push_back(ts.attrs[i].length);
-			string space((unsigned long)ts.attrs[i].length, '-');
+			int hyphen = ts.attrs[i].length > ts.attrs[i].name.length() ? ts.attrs[i].length : ts.attrs[i].name.length()+1;
+			string space((unsigned long)hyphen, '-');
 			newline = newline + space + "+";
 			secondline += ts.attrs[i].name;
-			string columnSpace(ts.attrs[i].length - ts.attrs[i].name.length(), ' ');
+			int space_length = ts.attrs[i].length - ts.attrs[i].name.length();
+			string columnSpace(space_length < 1 ? 1 : space_length, ' ');
 			secondline += columnSpace + "|";
 		}
 	}
@@ -280,16 +282,18 @@ bool RecordManager::selectAll(TableStruct &ts, vector<string> &result, vector<st
 
 			int j = i % recordAmountInOneBlock;
 
-			char *target = new char[recordLen - 1]; // this target is also needed to be freed in the higher place.
+			char *target = new char[recordLen]; // this target is also needed to be freed in the higher place.
 			char * target_begin = target;
 			if (*(block + j * recordLen) == 1) {
 				continue;
 			}
+			target[recordLen - 1] = '\0';
 			memcpy(target, block + j * recordLen + 1, (size_t)(recordLen - 1));
 			string then = "|";
 			for (int k = 0; k < (pointers.size() / 2); ++k) {
 				string this_line(target + pointers[k * 2]);
-				string this_space(pointers[k * 2 + 1] - this_line.length(), ' ');
+				int offset = ts.attrs[k].length > ts.attrs[k].name.length() ? 0 : -ts.attrs[k].length+ ts.attrs[k].name.length()+1;
+				string this_space(pointers[k * 2 + 1] - this_line.length()+offset, ' ');
 				then = then + this_line + this_space + "|";
 			}
 			then += "\n";

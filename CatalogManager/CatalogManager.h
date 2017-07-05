@@ -51,6 +51,10 @@ public:
 		_indexName = indexName;
 	}
 
+	void set_unique(bool unique) {
+		_is_unique = unique;
+	}
+
 	/*AttrInfo convert_to_attr() const  {
 		return AttrInfo(_name, _type.get_type_magic(), _type.get_size(), _is_unique, _indexName=="");
 	}*/
@@ -225,7 +229,7 @@ public:
 	}
 
 	void drop_index_with_index_name(const std::string& tableName, const std::string& indexName) {
-		//find_table(tableName).drop_index_with_index_name(indexName);
+		find_table(tableName).drop_index_with_index_name(indexName);
 	}
 
 	std::pair<Type, std::string> find_index(const std::string& tableName, const std::string& fieldName) {
